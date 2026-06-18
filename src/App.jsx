@@ -1,5 +1,14 @@
 import React, { useState, useEffect } from "react";
 
+// ── Inject Tailwind CSS (แก้ปัญหา UI เพี้ยน/ไอคอนใหญ่) ─────────────
+if (typeof document !== "undefined" && !document.getElementById("tailwind-cdn")) {
+  const script = document.createElement("script");
+  script.id = "tailwind-cdn";
+  script.src = "https://cdn.tailwindcss.com";
+  document.head.appendChild(script);
+}
+// ──────────────────────────────────────────────────────────
+
 // ── Supabase Setup ─────────────────────────────────────────
 // ในโปรเจกต์จริงของคุณเอ้ ให้นำเอาคอมเมนต์บรรทัดด้านล่างนี้ออกเพื่อเชื่อมต่อฐานข้อมูลครับ
 // import { supabase } from "./supabase";
