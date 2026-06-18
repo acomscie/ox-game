@@ -1,13 +1,29 @@
 /* eslint-disable */
 import React, { useState, useEffect } from "react";
-import { Copy, ArrowLeft, RotateCcw, Check, Sparkles } from "lucide-react";
 import { initializeApp, getApps, getApp } from "firebase/app";
 import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "firebase/auth";
 import { getFirestore, doc, setDoc, onSnapshot } from "firebase/firestore";
 
+// ── Icons (Inline SVGs เพื่อแทนที่ lucide-react ตัดปัญหา Build พัง) ────────
+const IconSparkles = ({ className }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>
+);
+const IconArrowLeft = ({ className }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
+);
+const IconCopy = ({ className }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+);
+const IconCheck = ({ className }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M20 6 9 17l-5-5"/></svg>
+);
+const IconRotateCcw = ({ className }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+);
+
 // ── Firebase Initialization ──────────────────────────────────────────────
 const getFirebaseConfig = () => {
-  // หากรันในระบบจำลอง (Canvas)
+  // หากรันในระบบจำลอง
   if (typeof window !== "undefined" && window["__firebase_config"]) {
     return JSON.parse(window["__firebase_config"]);
   }
@@ -207,7 +223,7 @@ export default function App() {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center font-sans">
         <div className="animate-pulse flex flex-col items-center text-indigo-500">
-           <Sparkles className="w-10 h-10 mb-4" />
+           <IconSparkles className="w-10 h-10 mb-4" />
            <p className="font-medium">กำลังโหลดระบบออนไลน์...</p>
         </div>
       </div>
@@ -265,7 +281,7 @@ export default function App() {
                 onClick={createRoom}
                 className="w-full py-3 rounded-xl font-bold text-indigo-600 bg-indigo-50 border-2 border-indigo-100 hover:bg-indigo-100 active:scale-95 transition-all flex items-center justify-center gap-2"
               >
-                <Sparkles className="w-5 h-5" /> สร้างห้องใหม่
+                <IconSparkles className="w-5 h-5" /> สร้างห้องใหม่
               </button>
             </div>
           </div>
@@ -308,7 +324,7 @@ export default function App() {
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <button onClick={exitRoom} className="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-200 rounded-xl transition-all">
-            <ArrowLeft className="w-6 h-6" />
+            <IconArrowLeft className="w-6 h-6" />
           </button>
           
           <button 
@@ -316,11 +332,11 @@ export default function App() {
             className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-full shadow-sm hover:border-indigo-300 hover:bg-indigo-50 transition-all group"
           >
             <span className="font-mono font-bold text-slate-600 tracking-wider">{roomId}</span>
-            {copied ? <Check className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4 text-slate-400 group-hover:text-indigo-500" />}
+            {copied ? <IconCheck className="w-4 h-4 text-green-500" /> : <IconCopy className="w-4 h-4 text-slate-400 group-hover:text-indigo-500" />}
           </button>
           
           <button onClick={resetGame} className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all">
-            <RotateCcw className="w-6 h-6" />
+            <IconRotateCcw className="w-6 h-6" />
           </button>
         </div>
 
@@ -372,7 +388,7 @@ export default function App() {
               onClick={resetGame}
               className="w-full py-4 rounded-xl font-bold text-white bg-slate-800 hover:bg-slate-900 active:scale-95 transition-all shadow-xl flex items-center justify-center gap-2"
             >
-              <RotateCcw className="w-5 h-5" /> เล่นใหม่อีกครั้ง
+              <IconRotateCcw className="w-5 h-5" /> เล่นใหม่อีกครั้ง
             </button>
           </div>
         )}
