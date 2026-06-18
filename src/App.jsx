@@ -5,11 +5,27 @@ import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged }
 import { getFirestore, doc, setDoc, onSnapshot } from "firebase/firestore";
 
 // ── Firebase Initialization ──────────────────────────────────────────────
-const firebaseConfig = typeof __firebase_config !== "undefined" ? JSON.parse(__firebase_config) : {};
+// ปรับแก้เพื่อป้องกัน Error ตอน Build (npm run build) บนระบบเช่น Vercel
+const getFirebaseConfig = () => {
+  // หากรันในระบบจำลอง (Canvas)
+  if (typeof window !== "undefined" && window.__firebase_config) {
+    return JSON.parse(window.__firebase_config);
+  }
+  // หากนำไปรันบน Vercel/Local ของตัวเอง สามารถใส่ Firebase Config ตัวเองตรงนี้ได้เลยครับ
+  return {
+    // apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "YOUR_API_KEY",
+    // authDomain: "YOUR_AUTH_DOMAIN",
+    // projectId: "YOUR_PROJECT_ID",
+  };
+};
+
+const firebaseConfig = getFirebaseConfig();
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
-const appId = typeof __app_id !== "undefined" ? __app_id : "default-app-id";
+
+// ป้องกันตัวแปร Global หายตอน Build
+const appId = typeof window !== "undefined" && window.__app_id ? window.__app_id : "my-vercel-app";
 
 // ── Helpers ──────────────────────────────────────────────
 const WIN_LINES = [
@@ -52,8 +68,9 @@ export default function App() {
   useEffect(() => {
     const initAuth = async () => {
       try {
-        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-          await signInWithCustomToken(auth, __initial_auth_token);
+        // ใช้ window.__initial_auth_token เพื่อกัน Error ตอน Build
+        if (typeof window !== 'undefined' && window.__initial_auth_token) {
+          await signInWithCustomToken(auth, window.__initial_auth_token);
         } else {
           await signInAnonymously(auth);
         }
