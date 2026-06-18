@@ -333,9 +333,10 @@ export default function App() {
             const isX = cell === "X";
             const isO = cell === "O";
             
-            let cellStyle = "bg-white border-2 border-slate-100 shadow-sm";
-            if (isX) cellStyle = "bg-indigo-50 border-indigo-100 text-indigo-500";
-            if (isO) cellStyle = "bg-rose-50 border-rose-100 text-rose-500";
+            // ปรับสีช่องว่างให้เข้มขึ้นตามที่ต้องการ
+            let cellStyle = "bg-slate-200 border-2 border-slate-300 shadow-sm";
+            if (isX) cellStyle = "bg-indigo-50 border-indigo-200 text-indigo-500";
+            if (isO) cellStyle = "bg-rose-50 border-rose-200 text-rose-500";
             if (isWinCell && isX) cellStyle = "bg-indigo-500 border-indigo-600 text-white shadow-lg shadow-indigo-200 z-10 scale-105";
             if (isWinCell && isO) cellStyle = "bg-rose-500 border-rose-600 text-white shadow-lg shadow-rose-200 z-10 scale-105";
 
@@ -347,7 +348,7 @@ export default function App() {
                 className={`
                   relative flex items-center justify-center rounded-2xl text-6xl font-black
                   transition-all duration-200
-                  ${!cell && !winner ? 'hover:bg-slate-50 hover:border-slate-300 hover:scale-[1.03] active:scale-[0.97] cursor-pointer' : 'cursor-default'}
+                  ${!cell && !winner ? 'hover:bg-slate-300 hover:border-slate-400 hover:scale-[1.03] active:scale-[0.97] cursor-pointer' : 'cursor-default'}
                   ${cellStyle}
                 `}
               >
