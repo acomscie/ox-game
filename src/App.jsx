@@ -214,7 +214,7 @@ export default function App() {
   // Lobby View
   if (!joined) {
     return (
-      <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-6 font-sans">
+      <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 flex flex-col items-center justify-center p-6 font-sans">
         <div className="mb-8 text-center animate-fade-in-up">
           <h1 className="text-4xl font-bold text-slate-800 tracking-tight flex justify-center items-center gap-2">
             <span className="text-indigo-500">O</span>
@@ -222,7 +222,6 @@ export default function App() {
             <span className="text-rose-500">X</span> 
             Online
           </h1>
-          <p className="text-slate-500 mt-2 font-medium">เล่นกับเพื่อนผ่าน Supabase</p>
         </div>
 
         <div className="bg-white rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-100 p-8 w-full max-w-sm animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
@@ -283,7 +282,7 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col items-center py-10 px-4 font-sans selection:bg-indigo-100">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 flex flex-col items-center py-10 px-4 font-sans selection:bg-indigo-100">
       
       {/* Custom Keyframes for Animations */}
       <style>{`
