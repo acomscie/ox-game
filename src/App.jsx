@@ -1,10 +1,24 @@
-/* eslint-disable */
 import React, { useState, useEffect } from "react";
-import { initializeApp, getApps, getApp } from "firebase/app";
-import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "firebase/auth";
-import { getFirestore, doc, setDoc, onSnapshot } from "firebase/firestore";
 
-// ── Icons (Inline SVGs เพื่อแทนที่ lucide-react ตัดปัญหา Build พัง) ────────
+// ── Supabase Setup ─────────────────────────────────────────
+// ในโปรเจกต์จริงของคุณเอ้ ให้นำเอาคอมเมนต์บรรทัดด้านล่างนี้ออกเพื่อเชื่อมต่อฐานข้อมูลครับ
+// import { supabase } from "./supabase";
+
+// Mock object ด้านล่างนี้มีไว้เพื่อให้ระบบ Preview ในหน้าเว็บนี้ทำงานได้โดยไม่พัง
+// ⚠️ ตอนที่คุณเอ้นำไปใช้ใน Vercel/เครื่องของคุณ สามารถลบ block const supabase นี้ทิ้งได้เลยครับ
+const supabase = {
+  channel: () => ({
+    on: () => ({ subscribe: () => ({}) }),
+  }),
+  removeChannel: () => {},
+  from: () => ({
+    select: () => ({ eq: () => ({ single: async () => ({ data: null, error: null }) }) }),
+    upsert: async () => ({}),
+  }),
+};
+// ──────────────────────────────────────────────────────────
+
+// ── Icons (Inline SVGs เพื่อแทนที่ lucide-react) ────────
 const IconSparkles = ({ className }) => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>
 );
@@ -20,34 +34,6 @@ const IconCheck = ({ className }) => (
 const IconRotateCcw = ({ className }) => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
 );
-
-// ── Firebase Initialization ──────────────────────────────────────────────
-const getFirebaseConfig = () => {
-  // หากรันในระบบจำลอง
-  if (typeof window !== "undefined" && window["__firebase_config"]) {
-    return JSON.parse(window["__firebase_config"]);
-  }
-  // ค่าจำลอง (Dummy) ที่ครบถ้วนขึ้น เพื่อให้ Vercel Build ผ่าน
-  return {
-    apiKey: "dummy-key-to-bypass-build",
-    projectId: "dummy-project-id",
-    appId: "dummy-app-id",
-  };
-};
-
-// ป้องกัน Vercel รันแล้วแครชตอน Build (SSR/Node environment)
-let app, auth, db;
-try {
-  const firebaseConfig = getFirebaseConfig();
-  app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
-  auth = getAuth(app);
-  db = getFirestore(app);
-} catch (error) {
-  console.warn("Bypassing Firebase initialization during build phase:", error);
-}
-
-// ป้องกันตัวแปร Global หายตอน Build
-const appId = typeof window !== "undefined" && window["__app_id"] ? window["__app_id"] : "my-vercel-app";
 
 // ── Helpers ──────────────────────────────────────────────
 const WIN_LINES = [
@@ -72,8 +58,6 @@ function generateRoomCode() {
 
 // ── Component ─────────────────────────────────────────────
 export default function App() {
-  const [user, setUser] = useState(null);
-  
   // Room state
   const [inputRoom, setInputRoom] = useState("");
   const [roomId, setRoomId] = useState("");
@@ -86,55 +70,43 @@ export default function App() {
   const [winner, setWinner] = useState(null);
   const [winLine, setWinLine] = useState([]);
 
-  // 1. Initialize Auth
+  // Sync Game Data with Supabase
   useEffect(() => {
-    const initAuth = async () => {
-      if (!auth) return; // Guard for build phase
-      try {
-        if (typeof window !== 'undefined' && window["__initial_auth_token"]) {
-          await signInWithCustomToken(auth, window["__initial_auth_token"]);
-        } else {
-          await signInAnonymously(auth);
-        }
-      } catch (err) {
-        console.error("Auth Error:", err);
-      }
-    };
-    initAuth();
-    
-    if (auth) {
-      const unsubscribe = onAuthStateChanged(auth, setUser);
-      return () => unsubscribe();
-    }
-  }, []);
+    if (!joined || !roomId) return;
 
-  // 2. Sync Game Data with Firestore
-  useEffect(() => {
-    if (!user || !joined || !roomId || !db) return;
+    loadGame();
 
-    const gameDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'games', roomId);
+    const channel = supabase
+      .channel(`game-room-${roomId}`)
+      .on("postgres_changes", { event: "*", schema: "public", table: "games" }, loadGame)
+      .subscribe();
 
-    const unsubscribe = onSnapshot(gameDocRef, (snap) => {
-      if (snap.exists()) {
-        const data = snap.data();
+    return () => supabase.removeChannel(channel);
+  }, [joined, roomId]);
+
+  const loadGame = async () => {
+    try {
+      const { data, error } = await supabase.from("games").select("*").eq("id", roomId).single();
+      if (data) {
         setBoard(data.board || Array(9).fill(null));
         setTurn(data.turn || "X");
         setWinner(data.winner || null);
         setWinLine(data.win_line || []);
       }
-    }, (error) => {
-      console.error("Snapshot error:", error);
-    });
-
-    return () => unsubscribe();
-  }, [user, joined, roomId]);
+      if (error && error.code !== 'PGRST116') {
+        console.error("Error loading game:", error);
+      }
+    } catch (e) {
+      console.warn("Supabase fetch bypassed (Preview mode)");
+    }
+  };
 
   // ── Game Actions ──────────────────────────────────────────────
-  const joinRoom = async () => {
+  const joinRoom = () => {
     const code = inputRoom.trim().toUpperCase();
-    if (code) {
-      setRoomId(code);
-      setJoined(true);
+    if (code) { 
+      setRoomId(code); 
+      setJoined(true); 
     }
   };
 
@@ -143,20 +115,24 @@ export default function App() {
     setInputRoom(code);
     setRoomId(code);
     
-    if (!db) return;
-    const gameDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'games', code);
-    await setDoc(gameDocRef, {
-      board: Array(9).fill(null),
-      turn: "X",
-      winner: null,
-      win_line: []
-    }, { merge: true });
+    // Initialize room in Supabase DB
+    try {
+      await supabase.from("games").upsert({
+        id: code,
+        board: Array(9).fill(null),
+        turn: "X",
+        winner: null,
+        win_line: []
+      });
+    } catch (e) {
+      console.warn("Supabase upsert bypassed (Preview mode)");
+    }
 
     setJoined(true);
   };
 
   const play = async (i) => {
-    if (board[i] || winner || !user || !db) return;
+    if (board[i] || winner) return;
     
     const newBoard = [...board];
     newBoard[i] = turn;
@@ -172,25 +148,32 @@ export default function App() {
     setWinner(nextWinner);
     setWinLine(nextWinLine);
 
-    // Sync to DB
-    const gameDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'games', roomId);
-    await setDoc(gameDocRef, {
-      board: newBoard,
-      turn: nextTurn,
-      winner: nextWinner,
-      win_line: nextWinLine
-    }, { merge: true });
+    // Sync to Supabase DB
+    try {
+      await supabase.from("games").upsert({
+        id: roomId,
+        board: newBoard,
+        turn: nextTurn,
+        winner: nextWinner,
+        win_line: nextWinLine
+      });
+    } catch (e) {
+      console.warn("Supabase upsert bypassed (Preview mode)");
+    }
   };
 
   const resetGame = async () => {
-    if (!db) return;
-    const gameDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'games', roomId);
-    await setDoc(gameDocRef, {
-      board: Array(9).fill(null),
-      turn: "X",
-      winner: null,
-      win_line: []
-    }, { merge: true });
+    try {
+      await supabase.from("games").upsert({
+        id: roomId,
+        board: Array(9).fill(null),
+        turn: "X",
+        winner: null,
+        win_line: []
+      });
+    } catch (e) {
+      console.warn("Supabase upsert bypassed (Preview mode)");
+    }
   };
 
   const exitRoom = () => {
@@ -219,17 +202,6 @@ export default function App() {
   };
 
   // ── Render ──────────────────────────────────────────────
-  if (!user) {
-    return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center font-sans">
-        <div className="animate-pulse flex flex-col items-center text-indigo-500">
-           <IconSparkles className="w-10 h-10 mb-4" />
-           <p className="font-medium">กำลังโหลดระบบออนไลน์...</p>
-        </div>
-      </div>
-    );
-  }
-
   // Lobby View
   if (!joined) {
     return (
@@ -241,7 +213,7 @@ export default function App() {
             <span className="text-rose-500">X</span> 
             Online
           </h1>
-          <p className="text-slate-500 mt-2 font-medium">เล่นกับเพื่อนแบบ Real-time</p>
+          <p className="text-slate-500 mt-2 font-medium">เล่นกับเพื่อนผ่าน Supabase</p>
         </div>
 
         <div className="bg-white rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-100 p-8 w-full max-w-sm animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
