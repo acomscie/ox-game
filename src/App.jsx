@@ -1,8 +1,42 @@
 import React, { useState, useEffect, useRef } from "react";
 import { supabase } from "./supabase";
 
-// Tailwind ถูกโหลดผ่าน <script> ใน public/index.html แล้ว
-// ไม่ต้อง inject ผ่าน JS อีกต่อไป (ป้องกันปัญหาหน้าจอไม่มีสไตล์ตอนโหลดครั้งแรก)
+// ── โหลด Tailwind CSS ────────────────────────────────────
+// โหลดผ่าน JS เหมือนเดิม (เพราะแก้ได้แค่ไฟล์ App.jsx ไฟล์เดียว)
+// แต่รอบนี้จะ "รอ" ให้โหลดเสร็จก่อนค่อยแสดงหน้าเว็บ
+// แทนที่จะ render ออกไปก่อนทันที (สาเหตุของปัญหาหน้าไม่มีสไตล์ตอนแรก)
+function useTailwindReady() {
+  const [ready, setReady] = useState(
+    typeof window !== "undefined" && window.__tailwindLoaded === true
+  );
+
+  useEffect(() => {
+    if (ready) return;
+    if (typeof document === "undefined") return;
+
+    const existing = document.getElementById("tailwind-cdn");
+    if (existing) {
+      existing.addEventListener("load", () => {
+        window.__tailwindLoaded = true;
+        setReady(true);
+      });
+      // เผื่อกรณี script โหลดเสร็จไปแล้วก่อนเราจะ attach listener ทัน
+      if (window.__tailwindLoaded) setReady(true);
+      return;
+    }
+
+    const script = document.createElement("script");
+    script.id = "tailwind-cdn";
+    script.src = "https://cdn.tailwindcss.com";
+    script.onload = () => {
+      window.__tailwindLoaded = true;
+      setReady(true);
+    };
+    document.head.appendChild(script);
+  }, [ready]);
+
+  return ready;
+}
 
 // ── Icons (Inline SVGs) ──────────────────────────────────
 const IconSparkles = ({ className }) => (
@@ -77,6 +111,7 @@ const CONFETTI_COLORS = ["#6366f1", "#f43f5e", "#f59e0b", "#10b981", "#06b6d4"];
 
 // ── Component ─────────────────────────────────────────────
 export default function App() {
+  const tailwindReady = useTailwindReady();
   const [inputRoom, setInputRoom] = useState("");
   const [roomId, setRoomId] = useState("");
   const [joined, setJoined] = useState(false);
@@ -383,6 +418,34 @@ export default function App() {
       channelRef.current.send({ type: "broadcast", event: "emoji", payload: { emoji } });
     }
   };
+
+  // ── รอ Tailwind โหลดเสร็จก่อนแสดงผล (กันหน้าจอไม่มีสไตล์) ──
+  if (!tailwindReady) {
+    return (
+      <div
+        style={{
+          minHeight: "100vh",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          background: "#f8f7ff",
+          fontFamily: "sans-serif",
+        }}
+      >
+        <div
+          style={{
+            width: "36px",
+            height: "36px",
+            border: "3px solid #e0e0f0",
+            borderTopColor: "#6366f1",
+            borderRadius: "50%",
+            animation: "spin 0.8s linear infinite",
+          }}
+        />
+        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+      </div>
+    );
+  }
 
   // ── Render: lobby ─────────────────────────────────────────
   if (!joined) {
