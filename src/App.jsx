@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { supabase } from "./supabase";
 
 // ── Inject Tailwind CSS ────────────────────────────────────
 if (typeof document !== "undefined" && !document.getElementById("tailwind-cdn")) {
@@ -7,23 +8,6 @@ if (typeof document !== "undefined" && !document.getElementById("tailwind-cdn"))
   script.src = "https://cdn.tailwindcss.com";
   document.head.appendChild(script);
 }
-// ──────────────────────────────────────────────────────────
-
-// ── Supabase Setup (สำหรับระบบ Preview) ─────────────────────
-// ⚠️ ในโปรเจกต์จริงของคุณเอ้ ให้นำเอาคอมเมนต์บรรทัดด้านล่างนี้ออกเพื่อเชื่อมต่อฐานข้อมูลครับ
-// import { supabase } from "./supabase";
-
-// Mock object ด้านล่างนี้มีไว้เพื่อให้ระบบ Preview ในหน้าเว็บทำงานได้โดยไม่แครช
-const supabase = {
-  channel: () => ({
-    on: () => ({ subscribe: () => ({}) }),
-  }),
-  removeChannel: () => {},
-  from: () => ({
-    select: () => ({ eq: () => ({ single: async () => ({ data: null, error: null }) }) }),
-    upsert: async () => ({ error: null }),
-  }),
-};
 // ──────────────────────────────────────────────────────────
 
 // ── Icons (Inline SVGs เพื่อแทนที่ lucide-react) ────────
@@ -70,24 +54,25 @@ export default function App() {
   const [roomId, setRoomId] = useState("");
   const [joined, setJoined] = useState(false);
   const [copied, setCopied] = useState(false);
-  
+  const [loadError, setLoadError] = useState("");
+
   const [board, setBoard] = useState(Array(9).fill(null));
   const [turn, setTurn] = useState("X");
   const [winner, setWinner] = useState(null);
   const [winLine, setWinLine] = useState([]);
 
-  // Sync Game Data with Supabase
+  // ── Sync game data with Supabase ─────────────────────────
   useEffect(() => {
     if (!joined || !roomId) return;
 
     loadGame();
 
-    // ปรับปรุงการรับข้อมูลให้แม่นยำขึ้น โดยกรองรับเฉพาะห้องนี้เท่านั้น
+    // ฟังการเปลี่ยนแปลงเฉพาะห้องนี้เท่านั้น (ต้องเปิด Realtime ใน Supabase Dashboard ก่อน)
     const channel = supabase
       .channel(`room-${roomId}`)
       .on(
-        "postgres_changes", 
-        { event: "*", schema: "public", table: "games", filter: `id=eq.${roomId}` }, 
+        "postgres_changes",
+        { event: "*", schema: "public", table: "games", filter: `id=eq.${roomId}` },
         (payload) => {
           if (payload.new && Object.keys(payload.new).length > 0) {
             const data = payload.new;
@@ -98,34 +83,39 @@ export default function App() {
           }
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") {
+          setLoadError("เชื่อมต่อ Realtime ไม่สำเร็จ ตรวจสอบว่าเปิด Replication ให้ table games แล้วหรือยัง");
+        }
+      });
 
     return () => supabase.removeChannel(channel);
   }, [joined, roomId]);
 
   const loadGame = async () => {
-    try {
-      const { data, error } = await supabase.from("games").select("*").eq("id", roomId).single();
-      if (data) {
-        setBoard(data.board || Array(9).fill(null));
-        setTurn(data.turn || "X");
-        setWinner(data.winner || null);
-        setWinLine(data.win_line || []);
-      }
-      if (error && error.code !== 'PGRST116') {
-        console.error("Error loading game:", error);
-      }
-    } catch (err) {
-      console.warn("Bypassed loadGame for preview");
+    const { data, error } = await supabase.from("games").select("*").eq("id", roomId).single();
+
+    if (data) {
+      setBoard(data.board || Array(9).fill(null));
+      setTurn(data.turn || "X");
+      setWinner(data.winner || null);
+      setWinLine(data.win_line || []);
+      setLoadError("");
+    }
+
+    // PGRST116 = ไม่เจอแถวนั้น (ห้องยังไม่ถูกสร้าง) ถือว่าปกติ ไม่ต้องแจ้ง error
+    if (error && error.code !== "PGRST116") {
+      console.error("Error loading game:", error);
+      setLoadError(`โหลดเกมไม่สำเร็จ: ${error.message}`);
     }
   };
 
-  // ── Game Actions ──────────────────────────────────────────────
+  // ── Game actions ──────────────────────────────────────────
   const joinRoom = () => {
     const code = inputRoom.trim().toUpperCase();
-    if (code) { 
-      setRoomId(code); 
-      setJoined(true); 
+    if (code) {
+      setRoomId(code);
+      setJoined(true);
     }
   };
 
@@ -134,66 +124,64 @@ export default function App() {
     setInputRoom(code);
     setRoomId(code);
     setJoined(true); // เปลี่ยนหน้าทันที ไม่ต้องรอให้บันทึกเสร็จ เพื่อลดอาการค้าง
-    
-    // Initialize room in Supabase DB
-    try {
-      const { error } = await supabase.from("games").upsert({
-        id: code,
-        board: Array(9).fill(null),
-        turn: "X",
-        winner: null,
-        win_line: []
-      });
-      if (error) console.error("Create Room Error:", error);
-    } catch (err) {
-      console.warn("Bypassed createRoom for preview");
+
+    const { error } = await supabase.from("games").upsert({
+      id: code,
+      board: Array(9).fill(null),
+      turn: "X",
+      winner: null,
+      win_line: [],
+    });
+
+    if (error) {
+      console.error("Create room error:", error);
+      setLoadError(`สร้างห้องไม่สำเร็จ: ${error.message}`);
     }
   };
 
   const play = async (i) => {
     if (board[i] || winner) return;
-    
+
     const newBoard = [...board];
     newBoard[i] = turn;
     const result = checkWinner(newBoard);
     const nextTurn = turn === "X" ? "O" : "X";
-    
+
     const nextWinner = result ? result.winner : null;
     const nextWinLine = result ? result.line : [];
 
-    // Optimistic Update: ขยับหมากให้ผู้เล่นเห็นทันที
+    // Optimistic update — ขยับหมากให้ผู้เล่นเห็นทันที ก่อนรอ Supabase ตอบกลับ
     setBoard(newBoard);
     setTurn(nextTurn);
     setWinner(nextWinner);
     setWinLine(nextWinLine);
 
-    // Sync to Supabase DB: ส่งข้อมูลไปบอกเพื่อนเบื้องหลัง
-    try {
-      const { error } = await supabase.from("games").upsert({
-        id: roomId,
-        board: newBoard,
-        turn: nextTurn,
-        winner: nextWinner,
-        win_line: nextWinLine
-      });
-      if (error) console.error("Play Error:", error);
-    } catch (err) {
-      console.warn("Bypassed play upsert for preview");
+    const { error } = await supabase.from("games").upsert({
+      id: roomId,
+      board: newBoard,
+      turn: nextTurn,
+      winner: nextWinner,
+      win_line: nextWinLine,
+    });
+
+    if (error) {
+      console.error("Play error:", error);
+      setLoadError(`บันทึกการเดินไม่สำเร็จ: ${error.message}`);
     }
   };
 
   const resetGame = async () => {
-    try {
-      const { error } = await supabase.from("games").upsert({
-        id: roomId,
-        board: Array(9).fill(null),
-        turn: "X",
-        winner: null,
-        win_line: []
-      });
-      if (error) console.error("Reset Error:", error);
-    } catch (err) {
-      console.warn("Bypassed resetGame for preview");
+    const { error } = await supabase.from("games").upsert({
+      id: roomId,
+      board: Array(9).fill(null),
+      turn: "X",
+      winner: null,
+      win_line: [],
+    });
+
+    if (error) {
+      console.error("Reset error:", error);
+      setLoadError(`รีเซ็ตไม่สำเร็จ: ${error.message}`);
     }
   };
 
@@ -205,23 +193,24 @@ export default function App() {
     setTurn("X");
     setWinner(null);
     setWinLine([]);
+    setLoadError("");
   };
 
   const copyRoomCode = () => {
     navigator.clipboard.writeText(roomId).catch(() => {
-        const textArea = document.createElement("textarea");
-        textArea.value = roomId;
-        document.body.appendChild(textArea);
-        textArea.focus();
-        textArea.select();
-        try { document.execCommand('copy'); } catch (err) { }
-        document.body.removeChild(textArea);
+      const textArea = document.createElement("textarea");
+      textArea.value = roomId;
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
+      try { document.execCommand("copy"); } catch (err) {}
+      document.body.removeChild(textArea);
     });
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
 
-  // ── Render ──────────────────────────────────────────────
+  // ── Render: lobby ─────────────────────────────────────────
   if (!joined) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 flex flex-col items-center justify-center p-6 font-sans">
@@ -229,12 +218,12 @@ export default function App() {
           <h1 className="text-4xl font-bold text-slate-800 tracking-tight flex justify-center items-center gap-2">
             <span className="text-indigo-500">O</span>
             <span className="text-slate-300">/</span>
-            <span className="text-rose-500">X</span> 
+            <span className="text-rose-500">X</span>
             Online
           </h1>
         </div>
 
-        <div className="bg-white rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-100 p-8 w-full max-w-sm animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
+        <div className="bg-white rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-100 p-8 w-full max-w-sm animate-fade-in-up" style={{ animationDelay: "0.1s" }}>
           <div className="space-y-6">
             <div>
               <label className="text-xs font-bold tracking-wider text-slate-400 uppercase mb-2 block">
@@ -248,7 +237,7 @@ export default function App() {
                 placeholder="กรอกรหัส 6 หลัก"
                 maxLength={6}
               />
-              <button 
+              <button
                 onClick={joinRoom}
                 disabled={!inputRoom.trim()}
                 className="w-full mt-3 py-3 rounded-xl font-bold text-white bg-indigo-600 hover:bg-indigo-700 active:scale-95 disabled:opacity-50 disabled:active:scale-100 transition-all shadow-md shadow-indigo-200"
@@ -267,13 +256,19 @@ export default function App() {
               <label className="text-xs font-bold tracking-wider text-slate-400 uppercase mb-2 block">
                 สร้างห้องใหม่ชวนเพื่อน
               </label>
-              <button 
+              <button
                 onClick={createRoom}
                 className="w-full py-3 rounded-xl font-bold text-indigo-600 bg-indigo-50 border-2 border-indigo-100 hover:bg-indigo-100 active:scale-95 transition-all flex items-center justify-center gap-2"
               >
                 <IconSparkles className="w-5 h-5" /> สร้างห้องใหม่
               </button>
             </div>
+
+            {loadError && (
+              <p className="text-xs text-rose-500 text-center bg-rose-50 border border-rose-100 rounded-lg px-3 py-2">
+                {loadError}
+              </p>
+            )}
           </div>
         </div>
       </div>
@@ -282,17 +277,18 @@ export default function App() {
 
   const statusLabel = winner ? "ผลการแข่งขัน" : "เทิร์นของ";
   const statusValue = winner === "draw" ? "เสมอ!" : winner ? winner : turn;
-  
+
   const getStatusColors = () => {
-    if (winner === 'draw') return 'bg-slate-100 text-slate-600 border-slate-200';
-    if (statusValue === 'X') return 'bg-indigo-50 text-indigo-600 border-indigo-200';
-    if (statusValue === 'O') return 'bg-rose-50 text-rose-600 border-rose-200';
-    return 'bg-white text-slate-800';
+    if (winner === "draw") return "bg-slate-100 text-slate-600 border-slate-200";
+    if (statusValue === "X") return "bg-indigo-50 text-indigo-600 border-indigo-200";
+    if (statusValue === "O") return "bg-rose-50 text-rose-600 border-rose-200";
+    return "bg-white text-slate-800";
   };
 
+  // ── Render: game screen ───────────────────────────────────
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 flex flex-col items-center py-10 px-4 font-sans selection:bg-indigo-100">
-      
+
       <style>{`
         @keyframes pop {
           0% { transform: scale(0.5); opacity: 0; }
@@ -308,24 +304,30 @@ export default function App() {
       `}</style>
 
       <div className="w-full max-w-[360px] animate-fade-in-up">
-        
+
         <div className="flex items-center justify-between mb-6">
           <button onClick={exitRoom} className="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-200 rounded-xl transition-all">
             <IconArrowLeft className="w-6 h-6" />
           </button>
-          
-          <button 
+
+          <button
             onClick={copyRoomCode}
             className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-full shadow-sm hover:border-indigo-300 hover:bg-indigo-50 transition-all group"
           >
             <span className="font-mono font-bold text-slate-600 tracking-wider">{roomId}</span>
             {copied ? <IconCheck className="w-4 h-4 text-green-500" /> : <IconCopy className="w-4 h-4 text-slate-400 group-hover:text-indigo-500" />}
           </button>
-          
+
           <button onClick={resetGame} className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all">
             <IconRotateCcw className="w-6 h-6" />
           </button>
         </div>
+
+        {loadError && (
+          <p className="text-xs text-rose-500 text-center bg-rose-50 border border-rose-100 rounded-lg px-3 py-2 mb-4">
+            {loadError}
+          </p>
+        )}
 
         <div className={`mb-8 p-4 rounded-2xl border-2 shadow-sm text-center transition-colors duration-300 ${getStatusColors()}`}>
           <p className="text-xs font-bold uppercase tracking-widest opacity-60 mb-1">{statusLabel}</p>
@@ -337,7 +339,7 @@ export default function App() {
             const isWinCell = winLine.includes(i);
             const isX = cell === "X";
             const isO = cell === "O";
-            
+
             let cellStyle = "bg-slate-200 border-2 border-slate-300 shadow-sm";
             if (isX) cellStyle = "bg-indigo-50 border-indigo-200 text-indigo-500";
             if (isO) cellStyle = "bg-rose-50 border-rose-200 text-rose-500";
@@ -352,12 +354,12 @@ export default function App() {
                 className={`
                   relative flex items-center justify-center rounded-2xl text-6xl font-black
                   transition-all duration-200
-                  ${!cell && !winner ? 'hover:bg-slate-300 hover:border-slate-400 hover:scale-[1.03] active:scale-[0.97] cursor-pointer' : 'cursor-default'}
+                  ${!cell && !winner ? "hover:bg-slate-300 hover:border-slate-400 hover:scale-[1.03] active:scale-[0.97] cursor-pointer" : "cursor-default"}
                   ${cellStyle}
                 `}
               >
                 {cell && (
-                  <span className={`animate-pop ${isWinCell ? 'drop-shadow-md' : ''}`}>
+                  <span className={`animate-pop ${isWinCell ? "drop-shadow-md" : ""}`}>
                     {cell}
                   </span>
                 )}
@@ -365,10 +367,10 @@ export default function App() {
             );
           })}
         </div>
-        
+
         {winner && (
           <div className="animate-fade-in-up">
-            <button 
+            <button
               onClick={resetGame}
               className="w-full py-4 rounded-xl font-bold text-white bg-slate-800 hover:bg-slate-900 active:scale-95 transition-all shadow-xl flex items-center justify-center gap-2"
             >
