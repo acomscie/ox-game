@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 
-// ── Inject Tailwind CSS (แก้ปัญหา UI เพี้ยน/ไอคอนใหญ่) ─────────────
+// ── Inject Tailwind CSS ────────────────────────────────────
 if (typeof document !== "undefined" && !document.getElementById("tailwind-cdn")) {
   const script = document.createElement("script");
   script.id = "tailwind-cdn";
@@ -9,12 +9,11 @@ if (typeof document !== "undefined" && !document.getElementById("tailwind-cdn"))
 }
 // ──────────────────────────────────────────────────────────
 
-// ── Supabase Setup ─────────────────────────────────────────
-// ในโปรเจกต์จริงของคุณเอ้ ให้นำเอาคอมเมนต์บรรทัดด้านล่างนี้ออกเพื่อเชื่อมต่อฐานข้อมูลครับ
+// ── Supabase Setup (สำหรับระบบ Preview) ─────────────────────
+// ⚠️ ในโปรเจกต์จริงของคุณเอ้ ให้นำเอาคอมเมนต์บรรทัดด้านล่างนี้ออกเพื่อเชื่อมต่อฐานข้อมูลครับ
 // import { supabase } from "./supabase";
 
-// Mock object ด้านล่างนี้มีไว้เพื่อให้ระบบ Preview ในหน้าเว็บนี้ทำงานได้โดยไม่พัง
-// ⚠️ ตอนที่คุณเอ้นำไปใช้ใน Vercel/เครื่องของคุณ สามารถลบ block const supabase นี้ทิ้งได้เลยครับ
+// Mock object ด้านล่างนี้มีไว้เพื่อให้ระบบ Preview ในหน้าเว็บทำงานได้โดยไม่แครช
 const supabase = {
   channel: () => ({
     on: () => ({ subscribe: () => ({}) }),
@@ -22,7 +21,7 @@ const supabase = {
   removeChannel: () => {},
   from: () => ({
     select: () => ({ eq: () => ({ single: async () => ({ data: null, error: null }) }) }),
-    upsert: async () => ({}),
+    upsert: async () => ({ error: null }),
   }),
 };
 // ──────────────────────────────────────────────────────────
@@ -67,13 +66,11 @@ function generateRoomCode() {
 
 // ── Component ─────────────────────────────────────────────
 export default function App() {
-  // Room state
   const [inputRoom, setInputRoom] = useState("");
   const [roomId, setRoomId] = useState("");
   const [joined, setJoined] = useState(false);
   const [copied, setCopied] = useState(false);
   
-  // Game state
   const [board, setBoard] = useState(Array(9).fill(null));
   const [turn, setTurn] = useState("X");
   const [winner, setWinner] = useState(null);
@@ -85,9 +82,22 @@ export default function App() {
 
     loadGame();
 
+    // ปรับปรุงการรับข้อมูลให้แม่นยำขึ้น โดยกรองรับเฉพาะห้องนี้เท่านั้น
     const channel = supabase
-      .channel(`game-room-${roomId}`)
-      .on("postgres_changes", { event: "*", schema: "public", table: "games" }, loadGame)
+      .channel(`room-${roomId}`)
+      .on(
+        "postgres_changes", 
+        { event: "*", schema: "public", table: "games", filter: `id=eq.${roomId}` }, 
+        (payload) => {
+          if (payload.new && Object.keys(payload.new).length > 0) {
+            const data = payload.new;
+            setBoard(data.board || Array(9).fill(null));
+            setTurn(data.turn || "X");
+            setWinner(data.winner || null);
+            setWinLine(data.win_line || []);
+          }
+        }
+      )
       .subscribe();
 
     return () => supabase.removeChannel(channel);
@@ -105,8 +115,8 @@ export default function App() {
       if (error && error.code !== 'PGRST116') {
         console.error("Error loading game:", error);
       }
-    } catch (e) {
-      console.warn("Supabase fetch bypassed (Preview mode)");
+    } catch (err) {
+      console.warn("Bypassed loadGame for preview");
     }
   };
 
@@ -123,21 +133,21 @@ export default function App() {
     const code = generateRoomCode();
     setInputRoom(code);
     setRoomId(code);
+    setJoined(true); // เปลี่ยนหน้าทันที ไม่ต้องรอให้บันทึกเสร็จ เพื่อลดอาการค้าง
     
     // Initialize room in Supabase DB
     try {
-      await supabase.from("games").upsert({
+      const { error } = await supabase.from("games").upsert({
         id: code,
         board: Array(9).fill(null),
         turn: "X",
         winner: null,
         win_line: []
       });
-    } catch (e) {
-      console.warn("Supabase upsert bypassed (Preview mode)");
+      if (error) console.error("Create Room Error:", error);
+    } catch (err) {
+      console.warn("Bypassed createRoom for preview");
     }
-
-    setJoined(true);
   };
 
   const play = async (i) => {
@@ -151,37 +161,39 @@ export default function App() {
     const nextWinner = result ? result.winner : null;
     const nextWinLine = result ? result.line : [];
 
-    // Optimistic Update
+    // Optimistic Update: ขยับหมากให้ผู้เล่นเห็นทันที
     setBoard(newBoard);
     setTurn(nextTurn);
     setWinner(nextWinner);
     setWinLine(nextWinLine);
 
-    // Sync to Supabase DB
+    // Sync to Supabase DB: ส่งข้อมูลไปบอกเพื่อนเบื้องหลัง
     try {
-      await supabase.from("games").upsert({
+      const { error } = await supabase.from("games").upsert({
         id: roomId,
         board: newBoard,
         turn: nextTurn,
         winner: nextWinner,
         win_line: nextWinLine
       });
-    } catch (e) {
-      console.warn("Supabase upsert bypassed (Preview mode)");
+      if (error) console.error("Play Error:", error);
+    } catch (err) {
+      console.warn("Bypassed play upsert for preview");
     }
   };
 
   const resetGame = async () => {
     try {
-      await supabase.from("games").upsert({
+      const { error } = await supabase.from("games").upsert({
         id: roomId,
         board: Array(9).fill(null),
         turn: "X",
         winner: null,
         win_line: []
       });
-    } catch (e) {
-      console.warn("Supabase upsert bypassed (Preview mode)");
+      if (error) console.error("Reset Error:", error);
+    } catch (err) {
+      console.warn("Bypassed resetGame for preview");
     }
   };
 
@@ -197,7 +209,6 @@ export default function App() {
 
   const copyRoomCode = () => {
     navigator.clipboard.writeText(roomId).catch(() => {
-        // Fallback
         const textArea = document.createElement("textarea");
         textArea.value = roomId;
         document.body.appendChild(textArea);
@@ -211,7 +222,6 @@ export default function App() {
   };
 
   // ── Render ──────────────────────────────────────────────
-  // Lobby View
   if (!joined) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 flex flex-col items-center justify-center p-6 font-sans">
@@ -270,7 +280,6 @@ export default function App() {
     );
   }
 
-  // Game View Setup
   const statusLabel = winner ? "ผลการแข่งขัน" : "เทิร์นของ";
   const statusValue = winner === "draw" ? "เสมอ!" : winner ? winner : turn;
   
@@ -284,7 +293,6 @@ export default function App() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 flex flex-col items-center py-10 px-4 font-sans selection:bg-indigo-100">
       
-      {/* Custom Keyframes for Animations */}
       <style>{`
         @keyframes pop {
           0% { transform: scale(0.5); opacity: 0; }
@@ -301,7 +309,6 @@ export default function App() {
 
       <div className="w-full max-w-[360px] animate-fade-in-up">
         
-        {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <button onClick={exitRoom} className="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-200 rounded-xl transition-all">
             <IconArrowLeft className="w-6 h-6" />
@@ -320,20 +327,17 @@ export default function App() {
           </button>
         </div>
 
-        {/* Status Indicator */}
         <div className={`mb-8 p-4 rounded-2xl border-2 shadow-sm text-center transition-colors duration-300 ${getStatusColors()}`}>
           <p className="text-xs font-bold uppercase tracking-widest opacity-60 mb-1">{statusLabel}</p>
           <p className="text-3xl font-black">{statusValue}</p>
         </div>
 
-        {/* Board */}
         <div className="grid grid-cols-3 gap-3 aspect-square mb-8">
           {board.map((cell, i) => {
             const isWinCell = winLine.includes(i);
             const isX = cell === "X";
             const isO = cell === "O";
             
-            // ปรับสีช่องว่างให้เข้มขึ้นตามที่ต้องการ
             let cellStyle = "bg-slate-200 border-2 border-slate-300 shadow-sm";
             if (isX) cellStyle = "bg-indigo-50 border-indigo-200 text-indigo-500";
             if (isO) cellStyle = "bg-rose-50 border-rose-200 text-rose-500";
@@ -362,7 +366,6 @@ export default function App() {
           })}
         </div>
         
-        {/* Play Again Button (Visible on Win/Draw) */}
         {winner && (
           <div className="animate-fade-in-up">
             <button 
