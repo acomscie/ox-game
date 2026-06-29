@@ -74,7 +74,7 @@ export default function RockPaperScissors({ roomId, mode, exitRoom, soundOn, tog
           if (payload.new && Object.keys(payload.new).length > 0) {
             const data = payload.new;
             const state = data.state || {};
-            if(data.game_type === 'rps') {
+            if (state.game_type === 'rps') {
               if (state.p1Choice !== undefined) setP1Choice(state.p1Choice);
               if (state.p2Choice !== undefined) setP2Choice(state.p2Choice);
               if (state.winner !== undefined) setWinner(state.winner);
@@ -101,15 +101,22 @@ export default function RockPaperScissors({ roomId, mode, exitRoom, soundOn, tog
 
   async function loadGame() {
     const { data } = await supabase.from("games").select("*").eq("id", roomId).single();
-    if (data) {
+    if (data && data.state?.game_type === 'rps') {
       const state = data.state || {};
-      if(data.game_type === 'rps') {
-        setP1Choice(state.p1Choice || null);
-        setP2Choice(state.p2Choice || null);
-        setWinner(state.winner || null);
-      }
+      setP1Choice(state.p1Choice || null);
+      setP2Choice(state.p2Choice || null);
+      setWinner(state.winner || null);
     }
   }
+
+  const syncState = async (newState) => {
+    if (mode === "online") {
+      await supabase.from("games").upsert({
+        id: roomId,
+        state: { game_type: 'rps', ...newState }
+      });
+    }
+  };
 
   const play = async (choice) => {
     if (!localPlayer) return; // Must select seat
@@ -133,13 +140,7 @@ export default function RockPaperScissors({ roomId, mode, exitRoom, soundOn, tog
     
     if (mode === "bot" && isP1) setP2Choice(nextP2Choice);
 
-    if (mode === "online") {
-      await supabase.from("games").upsert({
-        id: roomId,
-        game_type: 'rps',
-        state: { p1Choice: nextP1Choice, p2Choice: nextP2Choice, winner: null } // We compute winner on client side after delay, but we'll reset winner in DB for now
-      });
-    }
+    syncState({ p1Choice: nextP1Choice, p2Choice: nextP2Choice, winner: null });
   };
 
   const resetGame = async () => {
@@ -148,13 +149,7 @@ export default function RockPaperScissors({ roomId, mode, exitRoom, soundOn, tog
     setWinner(null);
     setRevealing(false);
 
-    if (mode === "online") {
-      await supabase.from("games").upsert({
-        id: roomId,
-        game_type: 'rps',
-        state: { p1Choice: null, p2Choice: null, winner: null }
-      });
-    }
+    syncState({ p1Choice: null, p2Choice: null, winner: null });
   };
 
   const copyRoomCode = () => {

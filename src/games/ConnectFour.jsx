@@ -133,11 +133,13 @@ export default function ConnectFour({ roomId, mode, exitRoom, soundOn, toggleSou
         (payload) => {
           if (payload.new && Object.keys(payload.new).length > 0) {
             const data = payload.new;
-            const state = data.state || {};
-            setBoard(state.board || Array(ROWS * COLS).fill(null));
-            setTurn(state.turn || "P1");
-            setWinner(state.winner || null);
-            setWinLine(state.winLine || []);
+            if (data.state?.game_type === 'connectfour') {
+              const state = data.state || {};
+              setBoard(state.board || Array(ROWS * COLS).fill(null));
+              setTurn(state.turn || "P1");
+              setWinner(state.winner || null);
+              setWinLine(state.winLine || []);
+            }
           }
         }
       )
@@ -170,14 +172,12 @@ export default function ConnectFour({ roomId, mode, exitRoom, soundOn, toggleSou
 
   async function loadGame() {
     const { data } = await supabase.from("games").select("*").eq("id", roomId).single();
-    if (data) {
+    if (data && data.state?.game_type === 'connectfour') {
       const state = data.state || {};
-      if(data.game_type === 'connectfour') {
-        setBoard(state.board || Array(ROWS * COLS).fill(null));
-        setTurn(state.turn || "P1");
-        setWinner(state.winner || null);
-        setWinLine(state.winLine || []);
-      }
+      setBoard(state.board || Array(ROWS * COLS).fill(null));
+      setTurn(state.turn || "P1");
+      setWinner(state.winner || null);
+      setWinLine(state.winLine || []);
     }
   }
 
@@ -208,8 +208,7 @@ export default function ConnectFour({ roomId, mode, exitRoom, soundOn, toggleSou
     if (mode === "online") {
       await supabase.from("games").upsert({
         id: roomId,
-        game_type: 'connectfour',
-        state: { board: newBoard, turn: nextTurn, winner: nextWinner, winLine: nextWinLine }
+        state: { game_type: 'connectfour', board: newBoard, turn: nextTurn, winner: nextWinner, winLine: nextWinLine }
       });
     }
   };

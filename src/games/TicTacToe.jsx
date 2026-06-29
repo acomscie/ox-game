@@ -93,12 +93,13 @@ export default function TicTacToe({ roomId, mode, exitRoom, soundOn, toggleSound
         (payload) => {
           if (payload.new && Object.keys(payload.new).length > 0) {
             const data = payload.new;
-            // Parse generic state back into TicTacToe state
-            const state = data.state || {};
-            setBoard(state.board || Array(9).fill(null));
-            setTurn(state.turn || "X");
-            setWinner(state.winner || null);
-            setWinLine(state.winLine || []);
+            if (data.state?.game_type === 'tictactoe') {
+              const state = data.state || {};
+              setBoard(state.board || Array(9).fill(null));
+              setTurn(state.turn || "X");
+              setWinner(state.winner || null);
+              setWinLine(state.winLine || []);
+            }
           }
         }
       )
@@ -130,14 +131,12 @@ export default function TicTacToe({ roomId, mode, exitRoom, soundOn, toggleSound
 
   async function loadGame() {
     const { data } = await supabase.from("games").select("*").eq("id", roomId).single();
-    if (data) {
+    if (data && data.state?.game_type === 'tictactoe') {
       const state = data.state || {};
-      if(data.game_type === 'tictactoe') {
-        setBoard(state.board || Array(9).fill(null));
-        setTurn(state.turn || "X");
-        setWinner(state.winner || null);
-        setWinLine(state.winLine || []);
-      }
+      setBoard(state.board || Array(9).fill(null));
+      setTurn(state.turn || "X");
+      setWinner(state.winner || null);
+      setWinLine(state.winLine || []);
     }
   }
 
@@ -153,6 +152,15 @@ export default function TicTacToe({ roomId, mode, exitRoom, soundOn, toggleSound
       return next;
     });
   }
+
+  const syncState = async (newState) => {
+    if (mode === "online") {
+      await supabase.from("games").upsert({
+        id: roomId,
+        state: { game_type: 'tictactoe', ...newState }
+      });
+    }
+  };
 
   const play = async (i) => {
     if (board[i] || winner) return;
@@ -171,11 +179,7 @@ export default function TicTacToe({ roomId, mode, exitRoom, soundOn, toggleSound
     setWinLine(nextWinLine);
 
     if (mode === "online") {
-      await supabase.from("games").upsert({
-        id: roomId,
-        game_type: 'tictactoe',
-        state: { board: newBoard, turn: nextTurn, winner: nextWinner, winLine: nextWinLine }
-      });
+      await syncState({ board: newBoard, turn: nextTurn, winner: nextWinner, winLine: nextWinLine });
     }
   };
 

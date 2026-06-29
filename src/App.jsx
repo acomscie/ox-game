@@ -65,12 +65,12 @@ export default function App() {
     const code = inputRoom.trim().toUpperCase();
     if (code) {
       setLoadError("");
-      const { data, error } = await supabase.from("games").select("game_type").eq("id", code).single();
+      const { data, error } = await supabase.from("games").select("state").eq("id", code).single();
       if (error || !data) {
         setLoadError("ไม่พบห้องนี้ หรือเกิดข้อผิดพลาดในการโหลดข้อมูล");
         return;
       }
-      setSelectedGame(data.game_type || "tictactoe");
+      setSelectedGame(data?.state?.game_type || "tictactoe");
       setMode("online");
       setRoomId(code);
       setJoined(true);
@@ -86,8 +86,7 @@ export default function App() {
 
     const { error } = await supabase.from("games").upsert({
       id: code,
-      game_type: selectedGame,
-      state: {} // specific game will initialize its state
+      state: { game_type: selectedGame } // specific game will initialize its state
     });
     if (error) {
       console.error("Create room error:", error);

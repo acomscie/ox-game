@@ -6,7 +6,18 @@ import { fireConfetti, ConfettiContainer } from "../utils/confetti";
 
 const MAX_ERRORS = 6;
 const ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
-const BOT_WORDS = ["REACT", "SUPABASE", "JAVASCRIPT", "TAILWIND", "GAMING", "FRONTEND", "DEVELOPER", "HANGMAN", "ONLINE", "MULTIPLAYER"];
+const BOT_WORDS = [
+  { word: "REACT", hint: "Library สร้าง UI ยอดนิยมจาก Facebook" },
+  { word: "SUPABASE", hint: "Backend-as-a-Service ทางเลือกแทน Firebase" },
+  { word: "JAVASCRIPT", hint: "ภาษาโปรแกรมที่ทำงานบนเบราว์เซอร์" },
+  { word: "TAILWIND", hint: "Utility-first CSS framework" },
+  { word: "GAMING", hint: "กิจกรรมเพื่อความบันเทิง เล่นกับเพื่อน" },
+  { word: "FRONTEND", hint: "ส่วนหน้าของเว็บไซต์ที่ผู้ใช้มองเห็น" },
+  { word: "DEVELOPER", hint: "ผู้พัฒนาซอฟต์แวร์หรือเว็บไซต์" },
+  { word: "HANGMAN", hint: "ชื่อของเกมทายคำศัพท์ที่มีรูปคนแขวนคอ" },
+  { word: "ONLINE", hint: "สถานะเชื่อมต่ออินเทอร์เน็ต" },
+  { word: "MULTIPLAYER", hint: "เกมที่เล่นได้หลายคนพร้อมกัน" }
+];
 
 const REACTIONS = ["😀", "😂", "🔥", "😱", "👏", "😢"];
 
@@ -15,6 +26,7 @@ export default function Hangman({ roomId, mode, exitRoom, soundOn, toggleSound }
   
   // Game State
   const [word, setWord] = useState("");
+  const [hint, setHint] = useState("");
   const [guesses, setGuesses] = useState([]);
   const [status, setStatus] = useState("setup"); // setup, playing, finished
   const [winner, setWinner] = useState(null); // P1, P2
@@ -22,6 +34,7 @@ export default function Hangman({ roomId, mode, exitRoom, soundOn, toggleSound }
 
   // Local input for setter
   const [inputWord, setInputWord] = useState("");
+  const [inputHint, setInputHint] = useState("");
   
   const [confetti, setConfetti] = useState([]);
   const [floatingEmojis, setFloatingEmojis] = useState([]);
@@ -87,9 +100,10 @@ export default function Hangman({ roomId, mode, exitRoom, soundOn, toggleSound }
         (payload) => {
           if (payload.new && Object.keys(payload.new).length > 0) {
             const data = payload.new;
-            if (data.game_type === 'hangman') {
+            if (data.state?.game_type === 'hangman') {
               const state = data.state || {};
               setWord(state.word || "");
+              setHint(state.hint || "");
               setGuesses(state.guesses || []);
               setStatus(state.status || "setup");
               setWinner(state.winner || null);
@@ -112,9 +126,10 @@ export default function Hangman({ roomId, mode, exitRoom, soundOn, toggleSound }
 
   async function loadGame() {
     const { data } = await supabase.from("games").select("*").eq("id", roomId).single();
-    if (data && data.game_type === 'hangman') {
+    if (data && data.state?.game_type === 'hangman') {
       const state = data.state || {};
       setWord(state.word || "");
+      setHint(state.hint || "");
       setGuesses(state.guesses || []);
       setStatus(state.status || "setup");
       setWinner(state.winner || null);
@@ -125,22 +140,22 @@ export default function Hangman({ roomId, mode, exitRoom, soundOn, toggleSound }
     if (mode === "online") {
       await supabase.from("games").upsert({
         id: roomId,
-        game_type: 'hangman',
-        state: newState
+        state: { game_type: 'hangman', ...newState }
       });
     }
   };
 
-  const startGame = (w) => {
+  const startGame = (w, h = "") => {
     const newWord = w.toUpperCase().replace(/[^A-Z]/g, "");
     if (!newWord) return;
     
     setWord(newWord);
+    setHint(h);
     setGuesses([]);
     setStatus("playing");
     setWinner(null);
 
-    syncState({ word: newWord, guesses: [], status: "playing", winner: null });
+    syncState({ word: newWord, hint: h, guesses: [], status: "playing", winner: null });
   };
 
   const handleGuess = (letter) => {
@@ -170,21 +185,23 @@ export default function Hangman({ roomId, mode, exitRoom, soundOn, toggleSound }
       setWinner(nextWinner);
     }
 
-    syncState({ word, guesses: nextGuesses, status: nextStatus, winner: nextWinner });
+    syncState({ word, hint, guesses: nextGuesses, status: nextStatus, winner: nextWinner });
   };
 
   const resetGame = () => {
     if (mode === "bot") {
       // Bot picks new word
-      const randomWord = BOT_WORDS[Math.floor(Math.random() * BOT_WORDS.length)];
-      startGame(randomWord);
+      const randomData = BOT_WORDS[Math.floor(Math.random() * BOT_WORDS.length)];
+      startGame(randomData.word, randomData.hint);
     } else {
       setWord("");
+      setHint("");
       setGuesses([]);
       setStatus("setup");
       setWinner(null);
       setInputWord("");
-      syncState({ word: "", guesses: [], status: "setup", winner: null });
+      setInputHint("");
+      syncState({ word: "", hint: "", guesses: [], status: "setup", winner: null });
     }
   };
 
@@ -299,8 +316,16 @@ export default function Hangman({ roomId, mode, exitRoom, soundOn, toggleSound }
                 placeholder="WORD"
                 maxLength={12}
               />
+              <input 
+                type="text" 
+                value={inputHint}
+                onChange={(e) => setInputHint(e.target.value)}
+                className="w-full text-center text-lg py-3 border-b-2 border-slate-200 focus:outline-none focus:border-indigo-500 text-slate-600"
+                placeholder="คำใบ้ (ไม่บังคับ)"
+                maxLength={40}
+              />
               <button 
-                onClick={() => startGame(inputWord)}
+                onClick={() => startGame(inputWord, inputHint)}
                 disabled={inputWord.length < 2}
                 className="w-full py-3 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 disabled:opacity-50 transition-all shadow-md"
               >
@@ -319,6 +344,12 @@ export default function Hangman({ roomId, mode, exitRoom, soundOn, toggleSound }
       {(status === "playing" || status === "finished") && (
         <div className="flex flex-col gap-6 animate-fade-in-up">
           
+          {hint && (
+            <div className="bg-indigo-50 border border-indigo-100 text-indigo-700 p-3 rounded-2xl text-center text-sm sm:text-base font-medium shadow-sm">
+              💡 <span className="opacity-80">คำใบ้:</span> {hint}
+            </div>
+          )}
+
           {/* Hangman Drawing */}
           <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100 flex justify-center items-center h-48 relative">
             <svg viewBox="0 0 200 200" className="w-40 h-40 stroke-slate-800" strokeWidth="6" fill="none" strokeLinecap="round" strokeLinejoin="round">
