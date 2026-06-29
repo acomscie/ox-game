@@ -73,7 +73,7 @@ export default function RockPaperScissors({ roomId, mode, exitRoom, soundOn, tog
         (payload) => {
           if (payload.new && Object.keys(payload.new).length > 0) {
             const data = payload.new;
-            const state = data.state || {};
+            const state = data.board || {};
             if (state.game_type === 'rps') {
               if (state.p1Choice !== undefined) setP1Choice(state.p1Choice);
               if (state.p2Choice !== undefined) setP2Choice(state.p2Choice);
@@ -101,8 +101,8 @@ export default function RockPaperScissors({ roomId, mode, exitRoom, soundOn, tog
 
   async function loadGame() {
     const { data } = await supabase.from("games").select("*").eq("id", roomId).single();
-    if (data && data.state?.game_type === 'rps') {
-      const state = data.state || {};
+    if (data && data.board?.game_type === 'rps') {
+      const state = data.board || {};
       setP1Choice(state.p1Choice || null);
       setP2Choice(state.p2Choice || null);
       setWinner(state.winner || null);
@@ -113,7 +113,7 @@ export default function RockPaperScissors({ roomId, mode, exitRoom, soundOn, tog
     if (mode === "online") {
       await supabase.from("games").upsert({
         id: roomId,
-        state: { game_type: 'rps', ...newState }
+        board: { game_type: 'rps', ...newState }
       });
     }
   };

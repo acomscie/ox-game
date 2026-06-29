@@ -93,8 +93,8 @@ export default function TicTacToe({ roomId, mode, exitRoom, soundOn, toggleSound
         (payload) => {
           if (payload.new && Object.keys(payload.new).length > 0) {
             const data = payload.new;
-            if (data.state?.game_type === 'tictactoe') {
-              const state = data.state || {};
+            if (data.board?.game_type === 'tictactoe') {
+              const state = data.board || {};
               setBoard(state.board || Array(9).fill(null));
               setTurn(state.turn || "X");
               setWinner(state.winner || null);
@@ -131,8 +131,8 @@ export default function TicTacToe({ roomId, mode, exitRoom, soundOn, toggleSound
 
   async function loadGame() {
     const { data } = await supabase.from("games").select("*").eq("id", roomId).single();
-    if (data && data.state?.game_type === 'tictactoe') {
-      const state = data.state || {};
+    if (data && data.board?.game_type === 'tictactoe') {
+      const state = data.board || {};
       setBoard(state.board || Array(9).fill(null));
       setTurn(state.turn || "X");
       setWinner(state.winner || null);
@@ -157,7 +157,7 @@ export default function TicTacToe({ roomId, mode, exitRoom, soundOn, toggleSound
     if (mode === "online") {
       await supabase.from("games").upsert({
         id: roomId,
-        state: { game_type: 'tictactoe', ...newState }
+        board: { game_type: 'tictactoe', ...newState }
       });
     }
   };

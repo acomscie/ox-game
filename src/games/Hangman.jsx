@@ -100,8 +100,8 @@ export default function Hangman({ roomId, mode, exitRoom, soundOn, toggleSound }
         (payload) => {
           if (payload.new && Object.keys(payload.new).length > 0) {
             const data = payload.new;
-            if (data.state?.game_type === 'hangman') {
-              const state = data.state || {};
+            if (data.board?.game_type === 'hangman') {
+              const state = data.board || {};
               setWord(state.word || "");
               setHint(state.hint || "");
               setGuesses(state.guesses || []);
@@ -126,8 +126,8 @@ export default function Hangman({ roomId, mode, exitRoom, soundOn, toggleSound }
 
   async function loadGame() {
     const { data } = await supabase.from("games").select("*").eq("id", roomId).single();
-    if (data && data.state?.game_type === 'hangman') {
-      const state = data.state || {};
+    if (data && data.board?.game_type === 'hangman') {
+      const state = data.board || {};
       setWord(state.word || "");
       setHint(state.hint || "");
       setGuesses(state.guesses || []);
@@ -140,7 +140,7 @@ export default function Hangman({ roomId, mode, exitRoom, soundOn, toggleSound }
     if (mode === "online") {
       await supabase.from("games").upsert({
         id: roomId,
-        state: { game_type: 'hangman', ...newState }
+        board: { game_type: 'hangman', ...newState }
       });
     }
   };
