@@ -3,7 +3,8 @@ import { supabase } from "./supabase";
 import TicTacToe from "./games/TicTacToe";
 import ConnectFour from "./games/ConnectFour";
 import RockPaperScissors from "./games/RockPaperScissors";
-import { IconSparkles, IconRobot, IconGamepad, IconCircle, IconHandRock } from "./components/Icons";
+import Hangman from "./games/Hangman";
+import { IconSparkles, IconRobot, IconGamepad, IconCircle, IconHandRock, IconType } from "./components/Icons";
 
 function useTailwindReady() {
   const [ready, setReady] = useState(
@@ -45,6 +46,7 @@ const GAMES = [
   { id: "tictactoe", name: "Tic-Tac-Toe", icon: <IconGamepad className="w-8 h-8 text-indigo-500" />, desc: "เกมโอเอ็กซ์สุดคลาสสิก เล่นง่ายจบไว", color: "from-indigo-100 to-blue-50", hover: "hover:border-indigo-300 hover:shadow-indigo-200" },
   { id: "connectfour", name: "Connect 4", icon: <IconCircle className="w-8 h-8 text-blue-500" />, desc: "หยอดเหรียญให้เรียงติดกัน 4 แถว", color: "from-blue-100 to-cyan-50", hover: "hover:border-blue-300 hover:shadow-blue-200" },
   { id: "rps", name: "เป่ายิ้งฉุบ", icon: <IconHandRock className="w-8 h-8 text-rose-500" />, desc: "วัดดวงและความไว ใครจะชนะ?", color: "from-rose-100 to-orange-50", hover: "hover:border-rose-300 hover:shadow-rose-200" },
+  { id: "hangman", name: "Hangman", icon: <IconType className="w-8 h-8 text-cyan-500" />, desc: "ทายคำศัพท์ภาษาอังกฤษ ก่อนที่จะโดนแขวนคอ!", color: "from-cyan-100 to-blue-50", hover: "hover:border-cyan-300 hover:shadow-cyan-200" },
 ];
 
 export default function App() {
@@ -280,6 +282,9 @@ export default function App() {
       )}
       {selectedGame === "rps" && (
         <RockPaperScissors roomId={roomId} mode={mode} exitRoom={exitRoom} soundOn={soundOn} toggleSound={toggleSound} />
+      )}
+      {selectedGame === "hangman" && (
+        <Hangman roomId={roomId} mode={mode} exitRoom={exitRoom} soundOn={soundOn} toggleSound={toggleSound} />
       )}
 
     </div>
