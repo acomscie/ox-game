@@ -319,7 +319,7 @@ export default function TicTacToe({ roomId, mode, exitRoom, soundOn, toggleSound
                   {isX && (
                     <svg viewBox="0 0 100 100" className="w-16 h-16 sm:w-20 sm:h-20 drop-shadow-[0_0_8px_rgba(99,102,241,0.8)]">
                       <path d="M 25 25 L 75 75" stroke="currentColor" strokeWidth="12" strokeLinecap="round" fill="none" className="animate-draw" />
-                      <path d="M 75 25 L 25 75" stroke="currentColor" strokeWidth="12" strokeLinecap="round" fill="none" className="animate-draw" style={{animationDelay: '0.2s', opacity: 0, animationFillMode: 'forwards'}} />
+                      <path d="M 75 25 L 25 75" stroke="currentColor" strokeWidth="12" strokeLinecap="round" fill="none" className="animate-draw" style={{animationDelay: '0.2s', animationFillMode: 'forwards'}} />
                     </svg>
                   )}
                   {isO && (

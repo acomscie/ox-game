@@ -347,7 +347,7 @@ export default function WordGuess({ roomId, mode, exitRoom, soundOn, toggleSound
   }
 
   return (
-    <div className="w-full max-w-md animate-fade-in-up relative flex flex-col h-[calc(100vh-80px)]">
+    <div className="w-full max-w-md animate-fade-in-up relative flex flex-col pb-8">
       <ConfettiContainer confetti={confetti} />
       
       <div className="pointer-events-none fixed inset-0 z-50 overflow-hidden">
@@ -357,7 +357,7 @@ export default function WordGuess({ roomId, mode, exitRoom, soundOn, toggleSound
       </div>
 
       {/* Header */}
-      <div className="flex items-center justify-between mb-2">
+      <div className="flex items-center justify-between mb-4 mt-2">
         <button onClick={exitRoom} className="btn-arcade p-2 text-indigo-200 hover:text-white glass-dark hover:bg-indigo-600/50 rounded-xl transition-all border border-indigo-500/30">
           <IconArrowLeft className="w-6 h-6" />
         </button>
@@ -426,7 +426,7 @@ export default function WordGuess({ roomId, mode, exitRoom, soundOn, toggleSound
       )}
 
       {(status === "playing" || status === "finished") && (
-        <div className="flex flex-col flex-grow items-center justify-between pb-2">
+        <div className="flex flex-col items-center justify-center gap-4 w-full mt-2">
           
           <div className="w-full flex justify-end shrink-0 mb-2">
             {status === "playing" && localPlayer === "P2" && Capacitor.isNativePlatform() && (
