@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { supabase } from "./supabase";
+import { Capacitor } from '@capacitor/core';
+import { AdMob } from '@capacitor-community/admob';
 import TicTacToe from "./games/TicTacToe";
 import ConnectFour from "./games/ConnectFour";
 import RockPaperScissors from "./games/RockPaperScissors";
@@ -12,6 +14,12 @@ function useTailwindReady() {
   );
 
   useEffect(() => {
+    if (Capacitor.isNativePlatform()) {
+      AdMob.initialize({
+        initializeForTesting: true,
+      }).catch(err => console.log('AdMob Init Error', err));
+    }
+
     if (ready) return;
     if (typeof document === "undefined") return;
 
@@ -100,6 +108,24 @@ export default function App() {
     setJoined(true);
   };
 
+  const showSupportAd = async () => {
+    if (!Capacitor.isNativePlatform()) {
+      alert("คุณสามารถดูโฆษณาเพื่อสนับสนุนเราได้บนแอปพลิเคชันมือถือ (Android/iOS) เท่านั้นครับ! 📱");
+      return;
+    }
+    
+    try {
+      await AdMob.prepareRewardVideoAd({
+        adId: "ca-app-pub-3940256099942544/5224354917", // Test Ad ID for Android Rewarded Video
+      });
+      await AdMob.showRewardVideoAd();
+      alert("ขอบคุณที่สนับสนุนนักพัฒนาครับ! 🙏🎉");
+    } catch (e) {
+      alert("ขออภัย ไม่สามารถโหลดโฆษณาได้ในขณะนี้ครับ");
+      console.error(e);
+    }
+  };
+
   const exitRoom = () => {
     setJoined(false);
     setRoomId("");
@@ -122,7 +148,7 @@ export default function App() {
   // ── Render: Game Hub Lobby ─────────────────────────────────────────
   if (!joined) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 flex flex-col items-center py-12 px-6 font-sans selection:bg-indigo-100">
+      <div className="min-h-screen animated-bg flex flex-col items-center py-12 px-6 font-sans text-slate-100">
         
         <style>{`
           @keyframes fade-in-up {
@@ -132,43 +158,46 @@ export default function App() {
           .animate-fade-in-up { animation: fade-in-up 0.5s ease-out forwards; }
         `}</style>
 
-        <div className="mb-10 text-center animate-fade-in-up">
-          <div className="inline-flex items-center justify-center p-3 bg-white rounded-2xl shadow-xl shadow-indigo-100 mb-4 ring-1 ring-slate-100">
-            <IconGamepad className="w-10 h-10 text-indigo-600" />
+        <div className="mb-10 text-center animate-fade-in-up relative">
+          <div className="absolute -top-20 -left-20 w-64 h-64 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl opacity-30"></div>
+          <div className="absolute -bottom-20 -right-20 w-64 h-64 bg-indigo-500 rounded-full mix-blend-multiply filter blur-3xl opacity-30"></div>
+          
+          <div className="inline-flex items-center justify-center p-4 glass-dark rounded-3xl shadow-xl mb-4 neon-border relative z-10">
+            <IconGamepad className="w-12 h-12 text-indigo-400" />
           </div>
-          <h1 className="text-4xl sm:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600 tracking-tight mb-2">
+          <h1 className="text-5xl sm:text-6xl font-black neon-text tracking-tight mb-2 relative z-10">
             Game Hub
           </h1>
-          <p className="text-slate-500 font-medium">ศูนย์รวมมินิเกม เล่นสนุกกับเพื่อนได้ทันที</p>
+          <p className="text-indigo-200 font-medium relative z-10 text-lg">ศูนย์รวมมินิเกม เล่นสนุกกับเพื่อนได้ทันที</p>
         </div>
 
         <div className="w-full max-w-4xl grid grid-cols-1 md:grid-cols-2 gap-8 animate-fade-in-up" style={{ animationDelay: "0.1s" }}>
           
           {/* Left Column: Select Game */}
           <div className="flex flex-col gap-4">
-            <h2 className="text-lg font-bold text-slate-700 ml-2">1. เลือกเกมที่อยากเล่น</h2>
+            <h2 className="text-xl font-bold text-indigo-200 ml-2 neon-text text-left">1. เลือกเกมที่อยากเล่น</h2>
             <div className="flex flex-col gap-3">
               {GAMES.map((game) => (
                 <button
                   key={game.id}
                   onClick={() => setSelectedGame(game.id)}
-                  className={`flex items-center gap-4 p-4 rounded-3xl transition-all duration-300 text-left border-2
+                  className={`btn-arcade flex items-center gap-4 p-4 rounded-3xl transition-all duration-300 text-left border-2
                     ${selectedGame === game.id 
-                      ? `bg-gradient-to-r ${game.color} border-transparent shadow-lg scale-[1.02] ring-4 ring-indigo-50` 
-                      : `bg-white border-slate-100 ${game.hover} hover:scale-[1.01]`
+                      ? `glass border-indigo-400 shadow-lg ring-4 ring-indigo-500/50 scale-[1.02]` 
+                      : `glass-dark border-transparent hover:border-indigo-500/30 hover:scale-[1.01]`
                     }
                   `}
                 >
-                  <div className={`p-3 rounded-2xl bg-white shadow-sm ${selectedGame === game.id ? 'shadow-md' : ''}`}>
+                  <div className={`p-4 rounded-2xl ${selectedGame === game.id ? 'bg-indigo-500 text-white' : 'glass-dark text-indigo-300'} shadow-sm`}>
                     {game.icon}
                   </div>
                   <div>
-                    <h3 className={`font-bold text-lg ${selectedGame === game.id ? 'text-slate-800' : 'text-slate-700'}`}>{game.name}</h3>
-                    <p className="text-sm text-slate-500 font-medium">{game.desc}</p>
+                    <h3 className={`font-bold text-xl ${selectedGame === game.id ? 'text-white' : 'text-slate-200'}`}>{game.name}</h3>
+                    <p className="text-sm text-indigo-200/70 font-medium">{game.desc}</p>
                   </div>
                   {selectedGame === game.id && (
                     <div className="ml-auto p-2">
-                      <div className="w-3 h-3 rounded-full bg-indigo-500 animate-pulse"></div>
+                      <div className="w-4 h-4 rounded-full bg-indigo-400 animate-pulse shadow-[0_0_10px_#818cf8]"></div>
                     </div>
                   )}
                 </button>
@@ -178,35 +207,36 @@ export default function App() {
 
           {/* Right Column: Play Options */}
           <div className="flex flex-col gap-4">
-            <h2 className="text-lg font-bold text-slate-700 ml-2">2. เลือกวิธีเล่น</h2>
-            <div className="bg-white rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-100 p-8 h-full flex flex-col">
-              <div className="space-y-6 flex-grow flex flex-col justify-center">
+            <h2 className="text-xl font-bold text-indigo-200 ml-2 neon-text text-left">2. เลือกวิธีเล่น</h2>
+            <div className="glass-dark rounded-3xl shadow-2xl border border-indigo-500/30 p-8 h-full flex flex-col relative z-10 overflow-hidden">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20"></div>
+              <div className="space-y-6 flex-grow flex flex-col justify-center relative z-10">
                 
                 {/* Create Room */}
                 <div>
                   <button
                     onClick={createRoom}
-                    className="w-full py-4 rounded-2xl font-bold text-indigo-600 bg-indigo-50 border-2 border-indigo-100 hover:bg-indigo-100 active:scale-[0.98] transition-all flex items-center justify-center gap-2 text-lg shadow-sm"
+                    className="btn-arcade w-full py-4 rounded-2xl font-bold text-white bg-indigo-600 hover:bg-indigo-500 border border-indigo-400/50 flex items-center justify-center gap-2 text-lg shadow-[0_0_15px_rgba(79,70,229,0.5)]"
                   >
                     <IconSparkles className="w-6 h-6" /> สร้างห้องใหม่
                   </button>
-                  <p className="text-center text-xs text-slate-400 mt-2 font-medium">สร้างห้องแล้วส่งรหัสให้เพื่อน</p>
+                  <p className="text-center text-xs text-indigo-300 mt-3 font-medium">สร้างห้องแล้วส่งรหัสให้เพื่อน</p>
                 </div>
 
                 <div className="relative flex items-center py-2">
-                  <div className="flex-grow border-t border-slate-100"></div>
-                  <span className="flex-shrink-0 mx-4 text-xs text-slate-400 font-bold uppercase tracking-widest">หรือ</span>
-                  <div className="flex-grow border-t border-slate-100"></div>
+                  <div className="flex-grow border-t border-indigo-500/30"></div>
+                  <span className="flex-shrink-0 mx-4 text-xs text-indigo-400 font-bold uppercase tracking-widest">หรือ</span>
+                  <div className="flex-grow border-t border-indigo-500/30"></div>
                 </div>
 
                 {/* Join Room */}
-                <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
-                  <label className="text-xs font-bold tracking-wider text-slate-500 uppercase mb-3 block text-center">
+                <div className="glass-dark p-4 rounded-2xl border border-indigo-500/30">
+                  <label className="text-xs font-bold tracking-wider text-indigo-300 uppercase mb-3 block text-center">
                     เข้าร่วมห้องที่มีอยู่
                   </label>
                   <div className="flex gap-2">
                     <input
-                      className="w-full px-4 py-3 text-center text-lg font-bold tracking-widest uppercase border-2 border-slate-200 rounded-xl bg-white text-slate-700 placeholder:text-slate-300 focus:outline-none focus:border-indigo-400 focus:ring-4 focus:ring-indigo-50 transition-all"
+                      className="w-full px-4 py-3 text-center text-lg font-bold tracking-widest uppercase border border-indigo-500/50 rounded-xl bg-slate-900/50 text-white placeholder:text-slate-500 focus:outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-400/50 transition-all"
                       value={inputRoom}
                       onChange={(e) => setInputRoom(e.target.value)}
                       onKeyDown={(e) => e.key === "Enter" && joinRoom()}
@@ -216,7 +246,7 @@ export default function App() {
                     <button
                       onClick={joinRoom}
                       disabled={!inputRoom.trim()}
-                      className="px-6 rounded-xl font-bold text-white bg-slate-800 hover:bg-slate-900 active:scale-95 disabled:opacity-50 disabled:active:scale-100 transition-all shadow-md"
+                      className="btn-arcade px-6 rounded-xl font-bold text-white bg-slate-700 hover:bg-slate-600 disabled:opacity-50 transition-all border border-slate-600"
                     >
                       ลุย!
                     </button>
@@ -224,24 +254,35 @@ export default function App() {
                 </div>
 
                 <div className="relative flex items-center py-2">
-                  <div className="flex-grow border-t border-slate-100"></div>
-                  <span className="flex-shrink-0 mx-4 text-xs text-slate-400 font-bold uppercase tracking-widest">หรือ</span>
-                  <div className="flex-grow border-t border-slate-100"></div>
+                  <div className="flex-grow border-t border-indigo-500/30"></div>
+                  <span className="flex-shrink-0 mx-4 text-xs text-indigo-400 font-bold uppercase tracking-widest">หรือ</span>
+                  <div className="flex-grow border-t border-indigo-500/30"></div>
                 </div>
 
                 {/* Play with Bot */}
                 <button
                   onClick={playWithBot}
-                  className="w-full py-4 rounded-2xl font-bold text-emerald-600 bg-emerald-50 border-2 border-emerald-100 hover:bg-emerald-100 active:scale-[0.98] transition-all flex items-center justify-center gap-2 text-lg shadow-sm"
+                  className="btn-arcade w-full py-4 rounded-2xl font-bold text-white bg-emerald-600 hover:bg-emerald-500 border border-emerald-400/50 transition-all flex items-center justify-center gap-2 text-lg shadow-[0_0_15px_rgba(16,185,129,0.4)]"
                 >
                   <IconRobot className="w-6 h-6" /> เล่นกับบอท (ออฟไลน์)
                 </button>
 
                 {loadError && (
-                  <p className="text-sm text-rose-500 text-center font-bold bg-rose-50 border border-rose-100 rounded-xl px-4 py-3 mt-4 animate-fade-in-up">
+                  <p className="text-sm text-rose-400 text-center font-bold glass-dark border border-rose-500/50 rounded-xl px-4 py-3 mt-4 animate-fade-in-up">
                     {loadError}
                   </p>
                 )}
+              </div>
+              
+              {/* Ad Support Button */}
+              <div className="mt-8 animate-fade-in-up relative z-10" style={{animationDelay: '100ms'}}>
+                <button 
+                  onClick={showSupportAd}
+                  className="btn-arcade w-full py-4 px-6 bg-gradient-to-r from-orange-600 to-pink-600 hover:from-orange-500 hover:to-pink-500 text-white rounded-2xl font-bold transition-all shadow-[0_0_20px_rgba(249,115,22,0.4)] flex items-center justify-center gap-3 border border-orange-400/50"
+                >
+                  <span className="text-2xl animate-pop">💖</span>
+                  <span className="text-lg">สนับสนุนนักพัฒนา (ดูโฆษณา)</span>
+                </button>
               </div>
             </div>
           </div>
@@ -252,8 +293,7 @@ export default function App() {
 
   // ── Render: Selected Game ─────────────────────────────────────────
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 flex flex-col items-center py-10 px-4 font-sans selection:bg-indigo-100 relative overflow-hidden">
-      
+    <div className="min-h-screen animated-bg flex flex-col items-center py-10 px-4 font-sans text-slate-100 relative overflow-hidden">
       <style>{`
         @keyframes pop {
           0% { transform: scale(0.5); opacity: 0; }

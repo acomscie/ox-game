@@ -109,3 +109,105 @@ code {
   padding: 4px 8px;
   background: var(--code-bg);
 }
+
+/* 2D Game Overhaul Styles */
+.glass {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1);
+}
+
+.glass-dark {
+  background: rgba(16, 18, 27, 0.4);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+}
+
+.neon-border {
+  border: 2px solid transparent;
+  box-shadow: 0 0 10px rgba(192, 132, 252, 0.5), inset 0 0 10px rgba(192, 132, 252, 0.5);
+  border-color: rgba(192, 132, 252, 0.8);
+}
+
+.neon-text {
+  text-shadow: 0 0 10px rgba(255,255,255,0.8), 0 0 20px var(--accent), 0 0 30px var(--accent);
+}
+
+.neon-text-x {
+  text-shadow: 0 0 10px rgba(255, 99, 132, 0.8), 0 0 20px rgba(255, 99, 132, 1);
+}
+
+.neon-text-o {
+  text-shadow: 0 0 10px rgba(54, 162, 235, 0.8), 0 0 20px rgba(54, 162, 235, 1);
+}
+
+/* 3D Arcade Button */
+.btn-arcade {
+  transition: all 0.15s ease;
+  transform: translateY(0);
+  box-shadow: 0 6px 0 0 rgba(0,0,0,0.2), 0 10px 20px rgba(0,0,0,0.1);
+}
+.btn-arcade:active {
+  transform: translateY(4px);
+  box-shadow: 0 2px 0 0 rgba(0,0,0,0.2), 0 5px 10px rgba(0,0,0,0.1);
+}
+
+/* Keyframes */
+@keyframes drawStroke {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.animate-draw {
+  stroke-dasharray: 1000;
+  stroke-dashoffset: 1000;
+  animation: drawStroke 0.6s ease-out forwards;
+}
+
+@keyframes dropToken {
+  0% { transform: translateY(-300px); opacity: 0; }
+  60% { transform: translateY(20px); opacity: 1; }
+  80% { transform: translateY(-10px); }
+  100% { transform: translateY(0); opacity: 1; }
+}
+
+.animate-drop {
+  animation: dropToken 0.5s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+}
+
+@keyframes shakeHand {
+  0%, 100% { transform: rotate(0deg) translateY(0); }
+  25% { transform: rotate(-15deg) translateY(-10px); }
+  75% { transform: rotate(15deg) translateY(-10px); }
+}
+
+.animate-shake {
+  animation: shakeHand 0.4s ease-in-out infinite;
+}
+
+@keyframes popIn {
+  0% { transform: scale(0.5); opacity: 0; }
+  70% { transform: scale(1.1); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.animate-pop {
+  animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+@keyframes floatBg {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.animated-bg {
+  background: linear-gradient(-45deg, #0f172a, #1e1b4b, #312e81, #4c1d95);
+  background-size: 400% 400%;
+  animation: floatBg 15s ease infinite;
+}

@@ -254,10 +254,10 @@ export default function ConnectFour({ roomId, mode, exitRoom, soundOn, toggleSou
   const statusValue = winner === "draw" ? "เสมอ!" : winner === "P1" ? "แดง (P1)" : winner === "P2" ? "เหลือง (P2)" : turn === "P1" ? "แดง (P1)" : "เหลือง (P2)";
 
   const getStatusColors = () => {
-    if (winner === "draw") return "bg-slate-100 text-slate-600 border-slate-200";
-    if (turn === "P1" || winner === "P1") return "bg-red-50 text-red-600 border-red-200 shadow-red-100";
-    if (turn === "P2" || winner === "P2") return "bg-yellow-50 text-yellow-600 border-yellow-200 shadow-yellow-100";
-    return "bg-white text-slate-800";
+    if (winner === "draw") return "glass text-slate-300 border-slate-500/50";
+    if (turn === "P1" || winner === "P1") return "glass border-red-500/50 text-red-400 shadow-[0_0_15px_rgba(239,68,68,0.3)]";
+    if (turn === "P2" || winner === "P2") return "glass border-yellow-400/50 text-yellow-300 shadow-[0_0_15px_rgba(250,204,21,0.3)]";
+    return "glass-dark text-slate-200";
   };
 
   return (
@@ -277,62 +277,65 @@ export default function ConnectFour({ roomId, mode, exitRoom, soundOn, toggleSou
       </div>
 
       <div className="flex items-center justify-between mb-4">
-        <button onClick={exitRoom} className="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-200 rounded-xl transition-all">
+        <button onClick={exitRoom} className="btn-arcade p-2 text-indigo-200 hover:text-white glass-dark hover:bg-indigo-600/50 rounded-xl transition-all border border-indigo-500/30">
           <IconArrowLeft className="w-6 h-6" />
         </button>
 
         {mode === "online" && (
-          <button onClick={copyRoomCode} className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-full shadow-sm hover:border-indigo-300 hover:bg-indigo-50 transition-all group">
-            <span className="font-mono font-bold text-slate-600 tracking-wider">{roomId}</span>
-            {copied ? <IconCheck className="w-4 h-4 text-green-500" /> : <IconCopy className="w-4 h-4 text-slate-400 group-hover:text-indigo-500" />}
+          <button onClick={copyRoomCode} className="btn-arcade flex items-center gap-2 px-4 py-2 glass-dark border border-indigo-500/30 rounded-full shadow-sm hover:border-indigo-400 hover:bg-indigo-900/50 transition-all group">
+            <span className="font-mono font-bold text-indigo-200 tracking-wider neon-text">{roomId}</span>
+            {copied ? <IconCheck className="w-4 h-4 text-emerald-400" /> : <IconCopy className="w-4 h-4 text-indigo-400 group-hover:text-indigo-300" />}
           </button>
         )}
 
-        <div className="flex items-center gap-1">
-          <button onClick={toggleSound} className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all">
+        <div className="flex items-center gap-2">
+          <button onClick={toggleSound} className="btn-arcade p-2 text-indigo-300 hover:text-white glass-dark hover:bg-indigo-600/50 border border-indigo-500/30 rounded-xl transition-all">
             {soundOn ? <IconVolume2 className="w-5 h-5" /> : <IconVolumeX className="w-5 h-5" />}
           </button>
-          <button onClick={resetGame} className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all">
+          <button onClick={resetGame} className="btn-arcade p-2 text-indigo-300 hover:text-white glass-dark hover:bg-indigo-600/50 border border-indigo-500/30 rounded-xl transition-all">
             <IconRotateCcw className="w-6 h-6" />
           </button>
         </div>
       </div>
 
-      <div className="flex items-center justify-between mb-4 bg-white/80 backdrop-blur-sm border border-slate-100 rounded-2xl px-4 py-3 shadow-sm">
+      <div className="flex items-center justify-between mb-4 glass-dark border border-indigo-500/30 rounded-2xl px-4 py-3 shadow-lg">
         <div className="flex items-center gap-4 text-sm w-full justify-between px-2">
-          <span className="font-bold text-red-600 flex flex-col items-center">
-            <span className="text-xs text-slate-400">P1 (แดง)</span>
-            <span className="text-xl text-slate-800">{score.P1}</span>
+          <span className="font-bold text-red-400 flex flex-col items-center">
+            <span className="text-xs text-red-300/70">P1 (แดง)</span>
+            <span className="text-xl text-white neon-text">{score.P1}</span>
           </span>
           <span className="font-bold text-slate-400 flex flex-col items-center">
              <span className="text-xs">เสมอ</span>
-             <span className="text-xl text-slate-700">{score.draw}</span>
+             <span className="text-xl text-slate-300">{score.draw}</span>
           </span>
-          <span className="font-bold text-yellow-500 flex flex-col items-center">
-            <span className="text-xs text-slate-400">P2 (เหลือง)</span>
-            <span className="text-xl text-slate-800">{score.P2}</span>
+          <span className="font-bold text-yellow-400 flex flex-col items-center">
+            <span className="text-xs text-yellow-300/70">P2 (เหลือง)</span>
+            <span className="text-xl text-white neon-text">{score.P2}</span>
           </span>
         </div>
       </div>
 
-      <div className={`mb-6 p-4 rounded-2xl border-2 shadow-md text-center transition-all duration-300 ${getStatusColors()}`}>
-        <p className="text-xs font-bold uppercase tracking-widest opacity-60 mb-1">{statusLabel}</p>
-        <p className="text-xl font-black animate-pop">{statusValue}</p>
+      <div className={`mb-6 p-4 rounded-2xl border shadow-md text-center transition-all duration-300 ${getStatusColors()}`}>
+        <p className="text-xs font-bold uppercase tracking-widest opacity-80 mb-1">{statusLabel}</p>
+        <p className="text-2xl font-black animate-pop tracking-wide">{statusValue}</p>
       </div>
 
       {/* Connect 4 Board */}
-      <div className="bg-blue-600 p-3 rounded-2xl shadow-xl shadow-blue-200 border-b-8 border-blue-800 mb-6">
-        <div className="grid grid-cols-7 gap-1 sm:gap-2">
+      <div className="bg-gradient-to-b from-blue-600 to-blue-800 p-3 sm:p-4 rounded-3xl shadow-[0_15px_35px_rgba(30,58,138,0.5)] border-t border-blue-400/30 border-b-8 border-blue-900 mb-6 relative overflow-hidden">
+        {/* Shine effect */}
+        <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-white/10 to-transparent pointer-events-none"></div>
+        
+        <div className="grid grid-cols-7 gap-2">
           {board.map((cell, i) => {
             const isWinCell = winLine.includes(i);
             const c = i % COLS;
             
-            let color = "bg-white shadow-inner shadow-slate-300";
-            if (cell === "P1") color = "bg-red-500 shadow-md shadow-red-900";
-            if (cell === "P2") color = "bg-yellow-400 shadow-md shadow-yellow-700";
+            let color = "bg-blue-900/40 shadow-[inset_0_4px_8px_rgba(0,0,0,0.4)]";
+            if (cell === "P1") color = "bg-gradient-to-br from-red-400 to-red-600 shadow-[inset_0_-4px_4px_rgba(153,27,27,0.5),0_4px_6px_rgba(0,0,0,0.3)]";
+            if (cell === "P2") color = "bg-gradient-to-br from-yellow-300 to-yellow-500 shadow-[inset_0_-4px_4px_rgba(161,98,7,0.5),0_4px_6px_rgba(0,0,0,0.3)]";
             
             const dropClass = animatingCell === i ? "animate-drop" : "";
-            const pulseClass = isWinCell ? "animate-pulse ring-4 ring-white" : "";
+            const pulseClass = isWinCell ? "animate-pulse ring-4 ring-white drop-shadow-[0_0_10px_rgba(255,255,255,0.8)]" : "";
 
             return (
               <div 
@@ -341,33 +344,28 @@ export default function ConnectFour({ roomId, mode, exitRoom, soundOn, toggleSou
                 onClick={() => play(c)}
               >
                 {/* Hole cut out effect via border and rounded-full */}
-                <div className={`w-[85%] h-[85%] rounded-full ${color} ${dropClass} ${pulseClass} transition-colors duration-200`}></div>
+                <div className={`w-full h-full rounded-full ${color} ${dropClass} ${pulseClass} transition-all duration-300 relative`}>
+                  {cell && (
+                    <div className="absolute inset-1 rounded-full border-2 border-white/20"></div>
+                  )}
+                </div>
                 
                 {/* Hover indicator (only on empty top row or lowest available row) */}
                 {!cell && !winner && (turn === "P1" || mode !== "bot") && (
-                  <div className={`absolute top-0 w-[85%] h-[85%] rounded-full opacity-0 group-hover:opacity-40 transition-opacity ${turn === "P1" ? "bg-red-300" : "bg-yellow-200"}`}></div>
+                  <div className={`absolute top-0 w-full h-full rounded-full opacity-0 group-hover:opacity-40 transition-opacity ${turn === "P1" ? "bg-red-400" : "bg-yellow-300"}`}></div>
                 )}
               </div>
             );
           })}
         </div>
       </div>
-      <style>{`
-        @keyframes dropIn {
-          0% { transform: translateY(-300%); opacity: 0; }
-          60% { transform: translateY(10%); opacity: 1; }
-          80% { transform: translateY(-5%); }
-          100% { transform: translateY(0); }
-        }
-        .animate-drop { animation: dropIn 0.4s ease-out forwards; }
-      `}</style>
 
       <div className="flex items-center justify-center gap-2 mb-6">
         {REACTIONS.map((emoji) => (
           <button
             key={emoji}
             onClick={() => sendEmoji(emoji)}
-            className="text-2xl bg-white border border-slate-100 rounded-xl w-10 h-10 flex items-center justify-center hover:bg-slate-50 hover:scale-110 active:scale-95 transition-all shadow-sm"
+            className="btn-arcade text-2xl glass-dark border border-indigo-500/30 rounded-xl w-12 h-12 flex items-center justify-center hover:bg-white/10 hover:border-indigo-400/50 transition-all shadow-sm"
           >
             {emoji}
           </button>
@@ -376,8 +374,8 @@ export default function ConnectFour({ roomId, mode, exitRoom, soundOn, toggleSou
 
       {winner && (
         <div className="animate-fade-in-up">
-          <button onClick={resetGame} className="w-full py-4 rounded-xl font-bold text-white bg-slate-800 hover:bg-slate-900 active:scale-95 transition-all shadow-xl flex items-center justify-center gap-2">
-            <IconRotateCcw className="w-5 h-5" /> เล่นใหม่อีกครั้ง
+          <button onClick={resetGame} className="btn-arcade w-full py-4 rounded-xl font-bold text-white bg-indigo-600 hover:bg-indigo-500 border border-indigo-400 transition-all shadow-[0_0_15px_rgba(99,102,241,0.5)] flex items-center justify-center gap-2 text-lg">
+            <IconRotateCcw className="w-6 h-6" /> เล่นใหม่อีกครั้ง
           </button>
         </div>
       )}

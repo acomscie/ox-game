@@ -189,17 +189,17 @@ export default function RockPaperScissors({ roomId, mode, exitRoom, soundOn, tog
 
     const baseStyle = "aspect-square rounded-3xl flex items-center justify-center text-7xl shadow-lg transition-all duration-500 relative overflow-hidden";
     
-    let bgStyle = "bg-white border-4 border-slate-100 text-slate-800";
-    if (hasChosen && !showResult) bgStyle = "bg-slate-100 border-4 border-slate-300";
+    let bgStyle = "glass-dark border-2 border-indigo-500/20 text-indigo-300";
+    if (hasChosen && !showResult) bgStyle = "glass border-2 border-indigo-400/50 text-indigo-200 shadow-[0_0_15px_rgba(99,102,241,0.3)]";
     if (showResult) {
-      if (winner === player) bgStyle = player === "P1" ? "bg-indigo-500 text-white border-4 border-indigo-600 scale-105 shadow-indigo-200" : "bg-rose-500 text-white border-4 border-rose-600 scale-105 shadow-rose-200";
-      else if (winner === "draw") bgStyle = "bg-yellow-400 text-white border-4 border-yellow-500";
-      else bgStyle = "bg-slate-200 text-slate-400 border-4 border-slate-300 scale-95 opacity-50";
+      if (winner === player) bgStyle = player === "P1" ? "glass border-2 border-indigo-400 bg-indigo-500/20 text-white shadow-[0_0_20px_rgba(99,102,241,0.6)] scale-105" : "glass border-2 border-pink-400 bg-pink-500/20 text-white shadow-[0_0_20px_rgba(244,114,182,0.6)] scale-105";
+      else if (winner === "draw") bgStyle = "glass border-2 border-yellow-400/50 text-white bg-yellow-500/20 shadow-[0_0_15px_rgba(250,204,21,0.3)]";
+      else bgStyle = "glass-dark border-2 border-slate-600/30 text-slate-500 scale-95 opacity-50";
     }
 
     return (
       <div className="flex flex-col items-center gap-2">
-        <span className="text-sm font-bold text-slate-500 uppercase tracking-widest">
+        <span className="text-sm font-bold text-indigo-300 uppercase tracking-widest neon-text">
           {player} {isMe && "(คุณ)"}
         </span>
         <div className={`${baseStyle} ${bgStyle} w-full`}>
@@ -214,10 +214,10 @@ export default function RockPaperScissors({ roomId, mode, exitRoom, soundOn, tog
   if (!localPlayer && mode === "online") {
     return (
       <div className="w-full max-w-sm animate-fade-in-up flex flex-col items-center justify-center">
-        <h2 className="text-xl font-bold text-slate-700 mb-6">เลือกที่นั่งของคุณ</h2>
+        <h2 className="text-2xl font-bold text-white mb-6 neon-text">เลือกที่นั่งของคุณ</h2>
         <div className="flex gap-4 w-full">
-          <button onClick={() => setLocalPlayer("P1")} className="flex-1 py-8 rounded-3xl bg-indigo-50 border-2 border-indigo-100 hover:bg-indigo-100 text-indigo-700 font-bold text-2xl transition-transform active:scale-95">P1</button>
-          <button onClick={() => setLocalPlayer("P2")} className="flex-1 py-8 rounded-3xl bg-rose-50 border-2 border-rose-100 hover:bg-rose-100 text-rose-700 font-bold text-2xl transition-transform active:scale-95">P2</button>
+          <button onClick={() => setLocalPlayer("P1")} className="btn-arcade flex-1 py-8 rounded-3xl glass border border-indigo-500/50 hover:bg-indigo-600/30 text-indigo-300 font-bold text-2xl transition-all shadow-[0_0_15px_rgba(99,102,241,0.2)]">P1</button>
+          <button onClick={() => setLocalPlayer("P2")} className="btn-arcade flex-1 py-8 rounded-3xl glass border border-pink-500/50 hover:bg-pink-600/30 text-pink-300 font-bold text-2xl transition-all shadow-[0_0_15px_rgba(244,114,182,0.2)]">P2</button>
         </div>
       </div>
     );
@@ -234,38 +234,38 @@ export default function RockPaperScissors({ roomId, mode, exitRoom, soundOn, tog
       </div>
 
       <div className="flex items-center justify-between mb-4">
-        <button onClick={exitRoom} className="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-200 rounded-xl transition-all">
+        <button onClick={exitRoom} className="btn-arcade p-2 text-indigo-200 hover:text-white glass-dark hover:bg-indigo-600/50 rounded-xl transition-all border border-indigo-500/30">
           <IconArrowLeft className="w-6 h-6" />
         </button>
         {mode === "online" && (
-          <button onClick={copyRoomCode} className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-full shadow-sm hover:border-indigo-300 hover:bg-indigo-50 transition-all group">
-            <span className="font-mono font-bold text-slate-600 tracking-wider">{roomId}</span>
-            {copied ? <IconCheck className="w-4 h-4 text-green-500" /> : <IconCopy className="w-4 h-4 text-slate-400 group-hover:text-indigo-500" />}
+          <button onClick={copyRoomCode} className="btn-arcade flex items-center gap-2 px-4 py-2 glass-dark border border-indigo-500/30 rounded-full shadow-sm hover:border-indigo-400 hover:bg-indigo-900/50 transition-all group">
+            <span className="font-mono font-bold text-indigo-200 tracking-wider neon-text">{roomId}</span>
+            {copied ? <IconCheck className="w-4 h-4 text-emerald-400" /> : <IconCopy className="w-4 h-4 text-indigo-400 group-hover:text-indigo-300" />}
           </button>
         )}
-        <div className="flex items-center gap-1">
-          <button onClick={toggleSound} className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all">
+        <div className="flex items-center gap-2">
+          <button onClick={toggleSound} className="btn-arcade p-2 text-indigo-300 hover:text-white glass-dark hover:bg-indigo-600/50 border border-indigo-500/30 rounded-xl transition-all">
             {soundOn ? <IconVolume2 className="w-5 h-5" /> : <IconVolumeX className="w-5 h-5" />}
           </button>
-          <button onClick={resetGame} className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all">
+          <button onClick={resetGame} className="btn-arcade p-2 text-indigo-300 hover:text-white glass-dark hover:bg-indigo-600/50 border border-indigo-500/30 rounded-xl transition-all">
             <IconRotateCcw className="w-6 h-6" />
           </button>
         </div>
       </div>
 
-      <div className="flex items-center justify-between mb-8 bg-white/80 backdrop-blur-sm border border-slate-100 rounded-2xl px-4 py-3 shadow-sm">
+      <div className="flex items-center justify-between mb-8 glass-dark border border-indigo-500/30 rounded-2xl px-4 py-3 shadow-lg">
         <div className="flex items-center gap-4 text-sm w-full justify-between px-2">
-          <span className="font-bold text-indigo-600 flex flex-col items-center">
-            <span className="text-xs text-slate-400">P1</span>
-            <span className="text-xl text-slate-800">{score.P1}</span>
+          <span className="font-bold text-indigo-400 flex flex-col items-center">
+            <span className="text-xs text-indigo-300/70">P1</span>
+            <span className="text-xl text-white neon-text-x">{score.P1}</span>
           </span>
           <span className="font-bold text-slate-400 flex flex-col items-center">
              <span className="text-xs">เสมอ</span>
-             <span className="text-xl text-slate-700">{score.draw}</span>
+             <span className="text-xl text-slate-300">{score.draw}</span>
           </span>
-          <span className="font-bold text-rose-600 flex flex-col items-center">
-            <span className="text-xs text-slate-400">P2</span>
-            <span className="text-xl text-slate-800">{score.P2}</span>
+          <span className="font-bold text-pink-400 flex flex-col items-center">
+            <span className="text-xs text-pink-300/70">P2</span>
+            <span className="text-xl text-white neon-text-o">{score.P2}</span>
           </span>
         </div>
       </div>
@@ -276,8 +276,8 @@ export default function RockPaperScissors({ roomId, mode, exitRoom, soundOn, tog
       </div>
 
       {(!winner && !revealing) && (
-        <div className="bg-white p-6 rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-100">
-          <p className="text-center font-bold text-slate-500 mb-4 uppercase tracking-widest text-sm">
+        <div className="glass-dark p-6 rounded-3xl shadow-[0_0_20px_rgba(0,0,0,0.3)] border border-indigo-500/20">
+          <p className="text-center font-bold text-indigo-300/80 mb-4 uppercase tracking-widest text-sm">
             {(localPlayer === "P1" ? !p1Choice : !p2Choice) ? "เลือกอาวุธของคุณ" : "รออีกฝ่าย..."}
           </p>
           <div className="flex justify-center gap-4">
@@ -291,9 +291,9 @@ export default function RockPaperScissors({ roomId, mode, exitRoom, soundOn, tog
                   onClick={() => play(c)}
                   disabled={disabled}
                   className={`
-                    w-16 h-16 rounded-2xl text-3xl flex items-center justify-center transition-all duration-200
-                    ${isSelected ? "bg-indigo-500 text-white scale-110 shadow-lg shadow-indigo-200 ring-4 ring-indigo-200" : "bg-slate-50 hover:bg-slate-100 border-2 border-slate-200 hover:scale-105 active:scale-95"}
-                    ${disabled && !isSelected ? "opacity-50 grayscale" : ""}
+                    w-16 h-16 rounded-2xl text-3xl flex items-center justify-center transition-all duration-200 border
+                    ${isSelected ? "glass border-indigo-400 bg-indigo-500/30 text-white scale-110 shadow-[0_0_15px_rgba(99,102,241,0.5)] ring-2 ring-indigo-300/50" : "glass border-indigo-500/20 hover:bg-white/5 hover:border-indigo-400/50 hover:scale-105 active:scale-95"}
+                    ${disabled && !isSelected ? "opacity-30 grayscale" : ""}
                   `}
                 >
                   {EMOJIS[c]}
@@ -306,7 +306,7 @@ export default function RockPaperScissors({ roomId, mode, exitRoom, soundOn, tog
 
       {(winner || revealing) && (
         <div className="text-center mb-6">
-          <h2 className="text-3xl font-black text-slate-800">
+          <h2 className="text-3xl font-black text-white drop-shadow-[0_2px_10px_rgba(0,0,0,0.5)]">
             {revealing ? "กำลังตัดสิน..." : winner === "draw" ? "เสมอ!" : winner === localPlayer ? "คุณชนะ! 🎉" : "คุณแพ้! 😢"}
           </h2>
         </div>
@@ -314,7 +314,7 @@ export default function RockPaperScissors({ roomId, mode, exitRoom, soundOn, tog
 
       <div className="flex items-center justify-center gap-2 mb-6 mt-6">
         {REACTIONS.map((emoji) => (
-          <button key={emoji} onClick={() => sendEmoji(emoji)} className="text-2xl bg-white border border-slate-100 rounded-xl w-10 h-10 flex items-center justify-center hover:bg-slate-50 hover:scale-110 active:scale-95 transition-all shadow-sm">
+          <button key={emoji} onClick={() => sendEmoji(emoji)} className="btn-arcade text-2xl glass-dark border border-indigo-500/30 rounded-xl w-12 h-12 flex items-center justify-center hover:bg-white/10 hover:border-indigo-400/50 transition-all shadow-sm">
             {emoji}
           </button>
         ))}
@@ -322,8 +322,8 @@ export default function RockPaperScissors({ roomId, mode, exitRoom, soundOn, tog
 
       {winner && (
         <div className="animate-fade-in-up">
-          <button onClick={resetGame} className="w-full py-4 rounded-xl font-bold text-white bg-slate-800 hover:bg-slate-900 active:scale-95 transition-all shadow-xl flex items-center justify-center gap-2">
-            <IconRotateCcw className="w-5 h-5" /> เล่นใหม่อีกครั้ง
+          <button onClick={resetGame} className="btn-arcade w-full py-4 rounded-xl font-bold text-white bg-indigo-600 hover:bg-indigo-500 border border-indigo-400 transition-all shadow-[0_0_15px_rgba(99,102,241,0.5)] flex items-center justify-center gap-2 text-lg">
+            <IconRotateCcw className="w-6 h-6" /> เล่นใหม่อีกครั้ง
           </button>
         </div>
       )}

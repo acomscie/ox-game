@@ -224,10 +224,10 @@ export default function TicTacToe({ roomId, mode, exitRoom, soundOn, toggleSound
   const statusValue = winner === "draw" ? "เสมอ!" : winner ? winner : turn;
 
   const getStatusColors = () => {
-    if (winner === "draw") return "bg-slate-100 text-slate-600 border-slate-200";
-    if (statusValue === "X") return "bg-indigo-50 text-indigo-600 border-indigo-200 shadow-indigo-100";
-    if (statusValue === "O") return "bg-rose-50 text-rose-600 border-rose-200 shadow-rose-100";
-    return "bg-white text-slate-800";
+    if (winner === "draw") return "glass text-slate-300 border-slate-500/50";
+    if (statusValue === "X") return "glass border-indigo-400/50 text-indigo-300 shadow-[0_0_15px_rgba(99,102,241,0.2)]";
+    if (statusValue === "O") return "glass border-pink-400/50 text-pink-300 shadow-[0_0_15px_rgba(244,114,182,0.2)]";
+    return "glass-dark text-slate-200";
   };
 
   return (
@@ -247,40 +247,40 @@ export default function TicTacToe({ roomId, mode, exitRoom, soundOn, toggleSound
       </div>
 
       <div className="flex items-center justify-between mb-4">
-        <button onClick={exitRoom} className="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-200 rounded-xl transition-all">
+        <button onClick={exitRoom} className="btn-arcade p-2 text-indigo-200 hover:text-white glass-dark hover:bg-indigo-600/50 rounded-xl transition-all border border-indigo-500/30">
           <IconArrowLeft className="w-6 h-6" />
         </button>
 
         {mode === "online" && (
-          <button onClick={copyRoomCode} className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-full shadow-sm hover:border-indigo-300 hover:bg-indigo-50 transition-all group">
-            <span className="font-mono font-bold text-slate-600 tracking-wider">{roomId}</span>
-            {copied ? <IconCheck className="w-4 h-4 text-green-500" /> : <IconCopy className="w-4 h-4 text-slate-400 group-hover:text-indigo-500" />}
+          <button onClick={copyRoomCode} className="btn-arcade flex items-center gap-2 px-4 py-2 glass-dark border border-indigo-500/30 rounded-full shadow-sm hover:border-indigo-400 hover:bg-indigo-900/50 transition-all group">
+            <span className="font-mono font-bold text-indigo-200 tracking-wider neon-text">{roomId}</span>
+            {copied ? <IconCheck className="w-4 h-4 text-emerald-400" /> : <IconCopy className="w-4 h-4 text-indigo-400 group-hover:text-indigo-300" />}
           </button>
         )}
 
-        <div className="flex items-center gap-1">
-          <button onClick={toggleSound} className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all">
+        <div className="flex items-center gap-2">
+          <button onClick={toggleSound} className="btn-arcade p-2 text-indigo-300 hover:text-white glass-dark hover:bg-indigo-600/50 border border-indigo-500/30 rounded-xl transition-all">
             {soundOn ? <IconVolume2 className="w-5 h-5" /> : <IconVolumeX className="w-5 h-5" />}
           </button>
-          <button onClick={resetGame} className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all">
+          <button onClick={resetGame} className="btn-arcade p-2 text-indigo-300 hover:text-white glass-dark hover:bg-indigo-600/50 border border-indigo-500/30 rounded-xl transition-all">
             <IconRotateCcw className="w-6 h-6" />
           </button>
         </div>
       </div>
 
-      <div className="flex items-center justify-between mb-4 bg-white/80 backdrop-blur-sm border border-slate-100 rounded-2xl px-4 py-3 shadow-sm">
+      <div className="flex items-center justify-between mb-4 glass-dark border border-indigo-500/30 rounded-2xl px-4 py-3 shadow-lg">
         <div className="flex items-center gap-4 text-sm w-full justify-between px-2">
-          <span className="font-bold text-indigo-600 flex flex-col items-center">
-            <span className="text-xs text-slate-400">ผู้เล่น X</span>
-            <span className="text-xl text-slate-800">{score.X}</span>
+          <span className="font-bold text-indigo-400 flex flex-col items-center">
+            <span className="text-xs text-indigo-300/70">ผู้เล่น X</span>
+            <span className="text-xl text-white neon-text-x">{score.X}</span>
           </span>
           <span className="font-bold text-slate-400 flex flex-col items-center">
              <span className="text-xs">เสมอ</span>
-             <span className="text-xl text-slate-700">{score.draw}</span>
+             <span className="text-xl text-slate-300">{score.draw}</span>
           </span>
-          <span className="font-bold text-rose-600 flex flex-col items-center">
-            <span className="text-xs text-slate-400">ผู้เล่น O</span>
-            <span className="text-xl text-slate-800">{score.O}</span>
+          <span className="font-bold text-pink-400 flex flex-col items-center">
+            <span className="text-xs text-pink-300/70">ผู้เล่น O</span>
+            <span className="text-xl text-white neon-text-o">{score.O}</span>
           </span>
         </div>
       </div>
@@ -296,11 +296,11 @@ export default function TicTacToe({ roomId, mode, exitRoom, soundOn, toggleSound
           const isX = cell === "X";
           const isO = cell === "O";
 
-          let cellStyle = "bg-white border-2 border-slate-200 shadow-sm";
-          if (isX) cellStyle = "bg-indigo-50 border-indigo-200 text-indigo-500 shadow-inner";
-          if (isO) cellStyle = "bg-rose-50 border-rose-200 text-rose-500 shadow-inner";
-          if (isWinCell && isX) cellStyle = "bg-indigo-500 border-indigo-600 text-white shadow-lg shadow-indigo-200 z-10 scale-105 animate-pulse";
-          if (isWinCell && isO) cellStyle = "bg-rose-500 border-rose-600 text-white shadow-lg shadow-rose-200 z-10 scale-105 animate-pulse";
+          let cellStyle = "glass-dark border-indigo-500/20";
+          if (isX) cellStyle = "glass border-indigo-500/40 text-indigo-400 shadow-[inset_0_0_15px_rgba(99,102,241,0.2)]";
+          if (isO) cellStyle = "glass border-pink-500/40 text-pink-400 shadow-[inset_0_0_15px_rgba(244,114,182,0.2)]";
+          if (isWinCell && isX) cellStyle = "glass border-indigo-400 bg-indigo-500/20 text-indigo-300 shadow-[0_0_20px_rgba(99,102,241,0.5)] z-10 scale-105";
+          if (isWinCell && isO) cellStyle = "glass border-pink-400 bg-pink-500/20 text-pink-300 shadow-[0_0_20px_rgba(244,114,182,0.5)] z-10 scale-105";
 
           return (
             <button
@@ -308,16 +308,26 @@ export default function TicTacToe({ roomId, mode, exitRoom, soundOn, toggleSound
               onClick={() => play(i)}
               disabled={!!cell || !!winner || (mode === "bot" && turn !== "X")}
               className={`
-                relative flex items-center justify-center rounded-2xl text-6xl font-black
-                transition-all duration-200
-                ${!cell && !winner ? "hover:bg-slate-100 hover:border-slate-300 hover:scale-[1.03] active:scale-[0.97] cursor-pointer" : "cursor-default"}
+                relative flex items-center justify-center rounded-2xl
+                transition-all duration-300 border backdrop-blur-md
+                ${!cell && !winner ? "hover:bg-white/5 hover:border-indigo-400/50 hover:scale-[1.03] active:scale-[0.97] cursor-pointer" : "cursor-default"}
                 ${cellStyle}
               `}
             >
               {cell && (
-                <span className={`animate-pop ${isWinCell ? "drop-shadow-md" : ""}`}>
-                  {cell}
-                </span>
+                <div className={`${isWinCell ? "animate-pulse" : ""}`}>
+                  {isX && (
+                    <svg viewBox="0 0 100 100" className="w-16 h-16 sm:w-20 sm:h-20 drop-shadow-[0_0_8px_rgba(99,102,241,0.8)]">
+                      <path d="M 25 25 L 75 75" stroke="currentColor" strokeWidth="12" strokeLinecap="round" fill="none" className="animate-draw" />
+                      <path d="M 75 25 L 25 75" stroke="currentColor" strokeWidth="12" strokeLinecap="round" fill="none" className="animate-draw" style={{animationDelay: '0.2s', opacity: 0, animationFillMode: 'forwards'}} />
+                    </svg>
+                  )}
+                  {isO && (
+                    <svg viewBox="0 0 100 100" className="w-16 h-16 sm:w-20 sm:h-20 drop-shadow-[0_0_8px_rgba(244,114,182,0.8)]">
+                      <circle cx="50" cy="50" r="30" fill="none" stroke="currentColor" strokeWidth="12" strokeLinecap="round" className="animate-draw" />
+                    </svg>
+                  )}
+                </div>
               )}
             </button>
           );
@@ -329,7 +339,7 @@ export default function TicTacToe({ roomId, mode, exitRoom, soundOn, toggleSound
           <button
             key={emoji}
             onClick={() => sendEmoji(emoji)}
-            className="text-2xl bg-white border border-slate-100 rounded-xl w-10 h-10 flex items-center justify-center hover:bg-slate-50 hover:scale-110 active:scale-95 transition-all shadow-sm"
+            className="btn-arcade text-2xl glass-dark border border-indigo-500/30 rounded-xl w-12 h-12 flex items-center justify-center hover:bg-white/10 hover:border-indigo-400/50 transition-all shadow-sm"
           >
             {emoji}
           </button>
@@ -338,8 +348,8 @@ export default function TicTacToe({ roomId, mode, exitRoom, soundOn, toggleSound
 
       {winner && (
         <div className="animate-fade-in-up">
-          <button onClick={resetGame} className="w-full py-4 rounded-xl font-bold text-white bg-slate-800 hover:bg-slate-900 active:scale-95 transition-all shadow-xl flex items-center justify-center gap-2">
-            <IconRotateCcw className="w-5 h-5" /> เล่นใหม่อีกครั้ง
+          <button onClick={resetGame} className="btn-arcade w-full py-4 rounded-xl font-bold text-white bg-indigo-600 hover:bg-indigo-500 border border-indigo-400 transition-all shadow-[0_0_15px_rgba(99,102,241,0.5)] flex items-center justify-center gap-2 text-lg">
+            <IconRotateCcw className="w-6 h-6" /> เล่นใหม่อีกครั้ง
           </button>
         </div>
       )}

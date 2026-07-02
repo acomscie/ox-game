@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">OX Game Hub</string>
+    <string name="title_activity_main">OX Game Hub</string>
+    <string name="package_name">com.acomscie.oxgame</string>
+    <string name="custom_url_scheme">com.acomscie.oxgame</string>
+</resources>
