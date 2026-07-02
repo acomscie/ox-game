@@ -330,7 +330,7 @@ export default function WordGuess({ roomId, mode, exitRoom, soundOn, toggleSound
   // --- Seat Selection ---
   if (!localPlayer && mode === "online") {
     return (
-      <div className="w-full max-w-sm animate-fade-in-up flex flex-col items-center justify-center">
+      <div className="w-full max-w-sm md:max-w-md animate-fade-in-up flex flex-col items-center justify-center">
         <h2 className="text-2xl font-bold text-white mb-6 neon-text">เลือกบทบาทของคุณ</h2>
         <div className="flex flex-col gap-4 w-full">
           <button onClick={() => setLocalPlayer("P1")} className="btn-arcade w-full py-6 rounded-3xl glass border border-indigo-500/50 hover:bg-indigo-600/30 text-indigo-300 font-bold text-xl transition-all shadow-[0_0_15px_rgba(99,102,241,0.2)] text-left px-6">
@@ -347,7 +347,7 @@ export default function WordGuess({ roomId, mode, exitRoom, soundOn, toggleSound
   }
 
   return (
-    <div className="w-full max-w-md animate-fade-in-up relative flex flex-col pb-8">
+    <div className="w-full max-w-md md:max-w-xl lg:max-w-2xl animate-fade-in-up relative flex flex-col pb-8">
       <ConfettiContainer confetti={confetti} />
       
       <div className="pointer-events-none fixed inset-0 z-50 overflow-hidden">
@@ -486,7 +486,7 @@ export default function WordGuess({ roomId, mode, exitRoom, soundOn, toggleSound
           )}
 
           {/* Keyboard */}
-          <div className={`w-full max-w-sm flex flex-col gap-2 shrink-0 ${localPlayer === "P1" && mode !== "bot" ? "opacity-50 pointer-events-none" : ""}`}>
+          <div className={`w-full max-w-sm md:max-w-md lg:max-w-lg flex flex-col gap-2 shrink-0 ${localPlayer === "P1" && mode !== "bot" ? "opacity-50 pointer-events-none" : ""}`}>
             {KEYBOARD_ROWS.map((row, i) => (
               <div key={i} className="flex justify-center gap-1.5 sm:gap-2">
                 {row.map(key => {

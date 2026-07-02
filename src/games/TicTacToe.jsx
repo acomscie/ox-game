@@ -231,7 +231,7 @@ export default function TicTacToe({ roomId, mode, exitRoom, soundOn, toggleSound
   };
 
   return (
-    <div className="w-full max-w-[360px] animate-fade-in-up relative">
+    <div className="w-full max-w-[360px] md:max-w-[480px] lg:max-w-[600px] animate-fade-in-up relative">
       <ConfettiContainer confetti={confetti} />
       
       {/* Floating emoji reactions */}

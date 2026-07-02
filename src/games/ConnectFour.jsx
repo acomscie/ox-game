@@ -261,7 +261,7 @@ export default function ConnectFour({ roomId, mode, exitRoom, soundOn, toggleSou
   };
 
   return (
-    <div className="w-full max-w-sm animate-fade-in-up relative">
+    <div className="w-full max-w-sm md:max-w-md lg:max-w-lg animate-fade-in-up relative">
       <ConfettiContainer confetti={confetti} />
       
       {/* Floating emoji reactions */}
