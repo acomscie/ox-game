@@ -297,7 +297,7 @@ export default function App() {
 
   // ── Render: Selected Game ─────────────────────────────────────────
   return (
-    <div className="min-h-screen animated-bg flex flex-col items-center py-10 px-4 font-sans text-slate-100 relative overflow-hidden">
+    <div className="h-[100dvh] animated-bg flex flex-col items-center pt-4 pb-2 px-2 sm:px-4 font-sans text-slate-100 relative overflow-hidden">
       <style>{`
         @keyframes pop {
           0% { transform: scale(0.5); opacity: 0; }

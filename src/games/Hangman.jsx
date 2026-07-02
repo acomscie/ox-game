@@ -296,7 +296,7 @@ export default function Hangman({ roomId, mode, exitRoom, soundOn, toggleSound }
   }
 
   return (
-    <div className="w-full max-w-md md:max-w-xl lg:max-w-2xl animate-fade-in-up relative">
+    <div className="w-full max-w-md md:max-w-xl lg:max-w-2xl h-full animate-fade-in-up relative flex flex-col pb-2">
       <ConfettiContainer confetti={confetti} />
       
       <div className="pointer-events-none fixed inset-0 z-50 overflow-hidden">
@@ -383,9 +383,9 @@ export default function Hangman({ roomId, mode, exitRoom, soundOn, toggleSound }
       )}
 
       {(status === "playing" || status === "finished") && (
-        <div className="flex flex-col gap-6 animate-fade-in-up">
+        <div className="flex flex-col flex-grow items-center justify-between min-h-0">
           
-          <div className="flex justify-between items-center gap-2">
+          <div className="w-full flex justify-end shrink-0 mb-2">
             {hint ? (
               <div className="glass border border-indigo-400/30 text-indigo-200 p-3 rounded-2xl text-center text-sm sm:text-base font-medium shadow-[0_0_10px_rgba(99,102,241,0.2)] flex-1">
                 💡 <span className="opacity-80">คำใบ้:</span> {hint}
@@ -404,8 +404,8 @@ export default function Hangman({ roomId, mode, exitRoom, soundOn, toggleSound }
           </div>
 
           {/* Hangman Drawing */}
-          <div className="glass-dark rounded-3xl p-6 shadow-sm border border-indigo-500/20 flex justify-center items-center h-48 relative overflow-hidden">
-            <svg viewBox="0 0 200 200" className="w-40 h-40 stroke-indigo-400 drop-shadow-[0_0_5px_rgba(99,102,241,0.8)]" strokeWidth="6" fill="none" strokeLinecap="round" strokeLinejoin="round">
+          <div className="glass-dark border border-indigo-500/30 rounded-2xl p-2 sm:p-4 mb-2 flex items-center justify-center shrink min-h-0 w-full max-w-[30vh] mx-auto">
+            <svg viewBox="0 0 200 200" className="w-auto h-full max-h-[30vh] stroke-indigo-400 drop-shadow-[0_0_5px_rgba(99,102,241,0.8)]" strokeWidth="6" fill="none" strokeLinecap="round" strokeLinejoin="round">
               {/* Scaffold */}
               <line x1="20" y1="180" x2="100" y2="180" className="animate-draw" />
               <line x1="60" y1="180" x2="60" y2="20" className="animate-draw" />
@@ -434,7 +434,7 @@ export default function Hangman({ roomId, mode, exitRoom, soundOn, toggleSound }
           </div>
 
           {/* Word Display */}
-          <div className="flex flex-wrap justify-center gap-2">
+          <div className="flex flex-wrap justify-center gap-1.5 sm:gap-2 mb-2 w-full px-2 shrink-0">
             {word.split("").map((letter, i) => {
               const isRevealed = guesses.includes(letter) || status === "finished";
               const isMissed = status === "finished" && winner === "P1" && !guesses.includes(letter);

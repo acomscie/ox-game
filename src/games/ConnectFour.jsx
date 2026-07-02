@@ -261,7 +261,7 @@ export default function ConnectFour({ roomId, mode, exitRoom, soundOn, toggleSou
   };
 
   return (
-    <div className="w-full max-w-sm md:max-w-md lg:max-w-lg animate-fade-in-up relative">
+    <div className="w-full max-w-sm md:max-w-md lg:max-w-lg h-full animate-fade-in-up relative flex flex-col pb-2">
       <ConfettiContainer confetti={confetti} />
       
       {/* Floating emoji reactions */}
@@ -315,17 +315,13 @@ export default function ConnectFour({ roomId, mode, exitRoom, soundOn, toggleSou
         </div>
       </div>
 
-      <div className={`mb-6 p-4 rounded-2xl border shadow-md text-center transition-all duration-300 ${getStatusColors()}`}>
-        <p className="text-xs font-bold uppercase tracking-widest opacity-80 mb-1">{statusLabel}</p>
-        <p className="text-2xl font-black animate-pop tracking-wide">{statusValue}</p>
+      <div className={`mb-4 p-4 rounded-2xl border-2 shadow-md text-center transition-all duration-300 shrink-0 ${getStatusColors()}`}>
+        <p className="text-xs font-bold uppercase tracking-widest opacity-60 mb-1">{statusLabel}</p>
+        <p className="text-2xl font-black animate-pop">{statusValue}</p>
       </div>
 
-      {/* Connect 4 Board */}
-      <div className="bg-gradient-to-b from-blue-600 to-blue-800 p-3 sm:p-4 rounded-3xl shadow-[0_15px_35px_rgba(30,58,138,0.5)] border-t border-blue-400/30 border-b-8 border-blue-900 mb-6 relative overflow-hidden">
-        {/* Shine effect */}
-        <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-white/10 to-transparent pointer-events-none"></div>
-        
-        <div className="grid grid-cols-7 gap-2">
+      <div className="flex-grow flex items-center justify-center min-h-0 w-full mb-4">
+        <div className="grid grid-cols-7 gap-1 sm:gap-2 p-2 sm:p-3 bg-blue-600 rounded-2xl sm:rounded-3xl shadow-[0_10px_30px_rgba(37,99,235,0.5)] border-4 sm:border-8 border-blue-700 w-full max-w-[65vh] mx-auto overflow-hidden">
           {board.map((cell, i) => {
             const isWinCell = winLine.includes(i);
             const c = i % COLS;
@@ -343,14 +339,12 @@ export default function ConnectFour({ roomId, mode, exitRoom, soundOn, toggleSou
                 className="w-full aspect-square relative flex items-center justify-center cursor-pointer group"
                 onClick={() => play(c)}
               >
-                {/* Hole cut out effect via border and rounded-full */}
                 <div className={`w-full h-full rounded-full ${color} ${dropClass} ${pulseClass} transition-all duration-300 relative`}>
                   {cell && (
                     <div className="absolute inset-1 rounded-full border-2 border-white/20"></div>
                   )}
                 </div>
                 
-                {/* Hover indicator (only on empty top row or lowest available row) */}
                 {!cell && !winner && (turn === "P1" || mode !== "bot") && (
                   <div className={`absolute top-0 w-full h-full rounded-full opacity-0 group-hover:opacity-40 transition-opacity ${turn === "P1" ? "bg-red-400" : "bg-yellow-300"}`}></div>
                 )}
@@ -360,7 +354,7 @@ export default function ConnectFour({ roomId, mode, exitRoom, soundOn, toggleSou
         </div>
       </div>
 
-      <div className="flex items-center justify-center gap-2 mb-6">
+      <div className="flex items-center justify-center gap-2 mb-2 shrink-0">
         {REACTIONS.map((emoji) => (
           <button
             key={emoji}

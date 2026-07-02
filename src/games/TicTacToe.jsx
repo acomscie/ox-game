@@ -231,7 +231,7 @@ export default function TicTacToe({ roomId, mode, exitRoom, soundOn, toggleSound
   };
 
   return (
-    <div className="w-full max-w-[360px] md:max-w-[480px] lg:max-w-[600px] animate-fade-in-up relative">
+    <div className="w-full max-w-[360px] md:max-w-[480px] lg:max-w-[600px] h-full flex flex-col animate-fade-in-up relative pb-2">
       <ConfettiContainer confetti={confetti} />
       
       {/* Floating emoji reactions */}
@@ -290,8 +290,9 @@ export default function TicTacToe({ roomId, mode, exitRoom, soundOn, toggleSound
         <p className="text-3xl font-black animate-pop">{statusValue}</p>
       </div>
 
-      <div className="grid grid-cols-3 gap-3 aspect-square mb-6">
-        {board.map((cell, i) => {
+      <div className="flex-grow flex items-center justify-center min-h-0 w-full my-4">
+        <div className="grid grid-cols-3 gap-2 sm:gap-3 aspect-square w-full max-w-[50vh] mx-auto">
+          {board.map((cell, i) => {
           const isWinCell = winLine.includes(i);
           const isX = cell === "X";
           const isO = cell === "O";
@@ -334,7 +335,7 @@ export default function TicTacToe({ roomId, mode, exitRoom, soundOn, toggleSound
         })}
       </div>
 
-      <div className="flex items-center justify-center gap-2 mb-6">
+      <div className="flex items-center justify-center gap-2 mb-2 shrink-0">
         {REACTIONS.map((emoji) => (
           <button
             key={emoji}

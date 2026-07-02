@@ -347,7 +347,7 @@ export default function WordGuess({ roomId, mode, exitRoom, soundOn, toggleSound
   }
 
   return (
-    <div className="w-full max-w-md md:max-w-xl lg:max-w-2xl animate-fade-in-up relative flex flex-col pb-8">
+    <div className="w-full max-w-md md:max-w-xl lg:max-w-2xl h-full animate-fade-in-up relative flex flex-col pb-2">
       <ConfettiContainer confetti={confetti} />
       
       <div className="pointer-events-none fixed inset-0 z-50 overflow-hidden">
@@ -426,9 +426,9 @@ export default function WordGuess({ roomId, mode, exitRoom, soundOn, toggleSound
       )}
 
       {(status === "playing" || status === "finished") && (
-        <div className="flex flex-col items-center justify-center gap-4 w-full mt-2">
+        <div className="flex flex-col flex-grow items-center justify-between gap-2 w-full mt-2 min-h-0">
           
-          <div className="w-full flex justify-end shrink-0 mb-2">
+          <div className="w-full flex justify-end shrink-0">
             {status === "playing" && localPlayer === "P2" && Capacitor.isNativePlatform() && (
               <button 
                 onClick={getAdHint}
@@ -441,7 +441,7 @@ export default function WordGuess({ roomId, mode, exitRoom, soundOn, toggleSound
           </div>
 
           {/* Grid */}
-          <div className="grid grid-rows-6 gap-2 shrink-0 mb-4">
+          <div className="grid grid-rows-6 gap-1.5 sm:gap-2 shrink w-full max-w-[40vh] mx-auto flex-grow min-h-0">
             {Array.from({ length: MAX_GUESSES }).map((_, rowIdx) => {
               const isCurrentRow = rowIdx === guesses.length;
               const guess = guesses[rowIdx] || (isCurrentRow ? currentGuess.padEnd(5, " ") : "     ");
@@ -449,7 +449,7 @@ export default function WordGuess({ roomId, mode, exitRoom, soundOn, toggleSound
               const colors = isSubmitted ? checkGuessColors(guess) : Array(5).fill("");
 
               return (
-                <div key={rowIdx} className="grid grid-cols-5 gap-2">
+                <div key={rowIdx} className="grid grid-cols-5 gap-1.5 sm:gap-2 h-full">
                   {guess.split("").map((letter, colIdx) => {
                     const c = colors[colIdx];
                     let style = "border-indigo-800/50 bg-transparent text-white"; // default empty
@@ -464,7 +464,7 @@ export default function WordGuess({ roomId, mode, exitRoom, soundOn, toggleSound
                     }
 
                     return (
-                      <div key={colIdx} className={`w-12 h-12 sm:w-14 sm:h-14 flex items-center justify-center text-2xl sm:text-3xl font-black rounded-lg border-2 transition-all duration-300 ${style}`}>
+                      <div key={colIdx} className={`w-full h-full flex items-center justify-center text-xl sm:text-3xl font-black rounded-lg border-2 transition-all duration-300 ${style}`}>
                         {letter.trim() !== "" ? letter : ""}
                       </div>
                     );

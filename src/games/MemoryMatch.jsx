@@ -373,7 +373,7 @@ export default function MemoryMatch({ roomId, mode, exitRoom, soundOn, toggleSou
   }
 
   return (
-    <div className="w-full max-w-md md:max-w-xl lg:max-w-2xl animate-fade-in-up relative flex flex-col items-center">
+    <div className="w-full max-w-md md:max-w-xl lg:max-w-2xl h-full animate-fade-in-up relative flex flex-col items-center pb-2">
       <ConfettiContainer confetti={confetti} />
       
       <div className="pointer-events-none fixed inset-0 z-50 overflow-hidden">
@@ -436,9 +436,9 @@ export default function MemoryMatch({ roomId, mode, exitRoom, soundOn, toggleSou
       )}
 
       {(status === "playing" || status === "finished") && (
-        <div className="w-full flex flex-col items-center">
+        <div className="w-full h-full flex flex-col flex-grow min-h-0 items-center">
           
-          <div className="w-full flex justify-end mb-4">
+          <div className="w-full flex justify-end shrink-0 mb-2">
             {status === "playing" && turn === localPlayer && Capacitor.isNativePlatform() && (
               <button 
                 onClick={getAdHint}
@@ -451,7 +451,8 @@ export default function MemoryMatch({ roomId, mode, exitRoom, soundOn, toggleSou
           </div>
 
           {/* Card Grid */}
-          <div className="grid grid-cols-4 gap-3 sm:gap-4 w-full aspect-square max-w-[360px] md:max-w-[480px] lg:max-w-[560px] perspective-1000">
+          <div className="flex-grow flex items-center justify-center min-h-0 w-full mb-2">
+            <div className="grid grid-cols-4 gap-2 sm:gap-3 w-full aspect-square max-w-[50vh] mx-auto perspective-1000">
             <style>{`
               .perspective-1000 { perspective: 1000px; }
               .preserve-3d { transform-style: preserve-3d; }
@@ -480,6 +481,7 @@ export default function MemoryMatch({ roomId, mode, exitRoom, soundOn, toggleSou
                 </div>
               );
             })}
+            </div>
           </div>
 
           {status === "finished" && (
@@ -494,7 +496,7 @@ export default function MemoryMatch({ roomId, mode, exitRoom, soundOn, toggleSou
       )}
 
       {/* Emoji Reactions */}
-      <div className="flex items-center justify-center gap-2 mt-auto pt-8 pb-4">
+      <div className="flex items-center justify-center gap-2 shrink-0">
         {REACTIONS.map((emoji) => (
           <button key={emoji} onClick={() => sendEmoji(emoji)} className="btn-arcade text-xl glass-dark border border-indigo-500/30 rounded-full w-10 h-10 flex items-center justify-center hover:bg-white/10 hover:border-indigo-400/50 transition-all shadow-sm">
             {emoji}

@@ -224,7 +224,7 @@ export default function RockPaperScissors({ roomId, mode, exitRoom, soundOn, tog
   }
 
   return (
-    <div className="w-full max-w-sm md:max-w-lg animate-fade-in-up relative">
+    <div className="w-full max-w-sm md:max-w-lg h-full animate-fade-in-up relative flex flex-col pb-2">
       <ConfettiContainer confetti={confetti} />
       
       <div className="pointer-events-none fixed inset-0 z-50 overflow-hidden">
@@ -270,17 +270,19 @@ export default function RockPaperScissors({ roomId, mode, exitRoom, soundOn, tog
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-6 mb-10">
-        {renderCard("P1", p1Choice)}
-        {renderCard("P2", p2Choice)}
+      <div className="flex-grow flex flex-col items-center justify-center min-h-0 w-full mb-4">
+        <div className="grid grid-cols-2 gap-6 w-full max-w-[50vh] mx-auto">
+          {renderCard("P1", p1Choice)}
+          {renderCard("P2", p2Choice)}
+        </div>
       </div>
 
       {(!winner && !revealing) && (
-        <div className="glass-dark p-6 rounded-3xl shadow-[0_0_20px_rgba(0,0,0,0.3)] border border-indigo-500/20">
+        <div className="glass-dark p-4 sm:p-6 rounded-3xl shadow-[0_0_20px_rgba(0,0,0,0.3)] border border-indigo-500/20 shrink-0 w-full mb-2">
           <p className="text-center font-bold text-indigo-300/80 mb-4 uppercase tracking-widest text-sm">
             {(localPlayer === "P1" ? !p1Choice : !p2Choice) ? "เลือกอาวุธของคุณ" : "รออีกฝ่าย..."}
           </p>
-          <div className="flex justify-center gap-4">
+          <div className="flex justify-center gap-2 sm:gap-4">
             {CHOICES.map(c => {
               const myChoice = localPlayer === "P1" ? p1Choice : p2Choice;
               const isSelected = myChoice === c;
@@ -291,7 +293,7 @@ export default function RockPaperScissors({ roomId, mode, exitRoom, soundOn, tog
                   onClick={() => play(c)}
                   disabled={disabled}
                   className={`
-                    w-16 h-16 rounded-2xl text-3xl flex items-center justify-center transition-all duration-200 border
+                    w-14 h-14 sm:w-16 sm:h-16 rounded-2xl text-2xl sm:text-3xl flex items-center justify-center transition-all duration-200 border
                     ${isSelected ? "glass border-indigo-400 bg-indigo-500/30 text-white scale-110 shadow-[0_0_15px_rgba(99,102,241,0.5)] ring-2 ring-indigo-300/50" : "glass border-indigo-500/20 hover:bg-white/5 hover:border-indigo-400/50 hover:scale-105 active:scale-95"}
                     ${disabled && !isSelected ? "opacity-30 grayscale" : ""}
                   `}
@@ -305,16 +307,16 @@ export default function RockPaperScissors({ roomId, mode, exitRoom, soundOn, tog
       )}
 
       {(winner || revealing) && (
-        <div className="text-center mb-6">
-          <h2 className="text-3xl font-black text-white drop-shadow-[0_2px_10px_rgba(0,0,0,0.5)]">
+        <div className="text-center mb-2 shrink-0">
+          <h2 className="text-2xl sm:text-3xl font-black text-white drop-shadow-[0_2px_10px_rgba(0,0,0,0.5)]">
             {revealing ? "กำลังตัดสิน..." : winner === "draw" ? "เสมอ!" : winner === localPlayer ? "คุณชนะ! 🎉" : "คุณแพ้! 😢"}
           </h2>
         </div>
       )}
 
-      <div className="flex items-center justify-center gap-2 mb-6 mt-6">
+      <div className="flex items-center justify-center gap-2 mb-2 shrink-0">
         {REACTIONS.map((emoji) => (
-          <button key={emoji} onClick={() => sendEmoji(emoji)} className="btn-arcade text-2xl glass-dark border border-indigo-500/30 rounded-xl w-12 h-12 flex items-center justify-center hover:bg-white/10 hover:border-indigo-400/50 transition-all shadow-sm">
+          <button key={emoji} onClick={() => sendEmoji(emoji)} className="btn-arcade text-xl sm:text-2xl glass-dark border border-indigo-500/30 rounded-xl w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center hover:bg-white/10 hover:border-indigo-400/50 transition-all shadow-sm">
             {emoji}
           </button>
         ))}
