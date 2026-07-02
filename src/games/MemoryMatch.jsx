@@ -24,6 +24,7 @@ export default function MemoryMatch({ roomId, mode, exitRoom, soundOn, toggleSou
   // Game State
   const [cards, setCards] = useState([]);
   const [flippedIndices, setFlippedIndices] = useState([]);
+  const flippedRef = useRef([]); // Add ref for sync access
   const [turn, setTurn] = useState("P1");
   const [score, setScore] = useState({ P1: 0, P2: 0 });
   const [status, setStatus] = useState("setup"); // setup, playing, finished
@@ -55,6 +56,7 @@ export default function MemoryMatch({ roomId, mode, exitRoom, soundOn, toggleSou
               const state = data.board || {};
               setCards(state.cards || []);
               setFlippedIndices(state.flippedIndices || []);
+              flippedRef.current = state.flippedIndices || [];
               setTurn(state.turn || "P1");
               setScore(state.score || { P1: 0, P2: 0 });
               setStatus(state.status || "setup");
@@ -82,6 +84,7 @@ export default function MemoryMatch({ roomId, mode, exitRoom, soundOn, toggleSou
       const state = data.board || {};
       setCards(state.cards || []);
       setFlippedIndices(state.flippedIndices || []);
+      flippedRef.current = state.flippedIndices || [];
       setTurn(state.turn || "P1");
       setScore(state.score || { P1: 0, P2: 0 });
       setStatus(state.status || "setup");
@@ -116,6 +119,7 @@ export default function MemoryMatch({ roomId, mode, exitRoom, soundOn, toggleSou
     
     setCards(newState.cards);
     setFlippedIndices(newState.flippedIndices);
+    flippedRef.current = [];
     setTurn(newState.turn);
     setScore(newState.score);
     setStatus(newState.status);
@@ -147,8 +151,8 @@ export default function MemoryMatch({ roomId, mode, exitRoom, soundOn, toggleSou
     if (status !== "playing") return;
     if (mode === "online" && turn !== localPlayer) return;
     if (mode === "bot" && turn !== "P1") return; // Bot is P2
-    if (flippedIndices.length >= 2) return;
-    if (flippedIndices.includes(index)) return;
+    if (flippedRef.current.length >= 2) return;
+    if (flippedRef.current.includes(index)) return;
     if (cards[index].isMatched) return;
 
     flipCard(index, turn);
@@ -156,7 +160,8 @@ export default function MemoryMatch({ roomId, mode, exitRoom, soundOn, toggleSou
 
   const flipCard = (index, currentTurn) => {
     playMoveSound("O", soundOn);
-    const nextFlipped = [...flippedIndices, index];
+    const nextFlipped = [...flippedRef.current, index];
+    flippedRef.current = nextFlipped;
     setFlippedIndices(nextFlipped);
     
     // Update bot memory
@@ -213,6 +218,7 @@ export default function MemoryMatch({ roomId, mode, exitRoom, soundOn, toggleSou
         if (nextStatus === "playing") {
           setCards(nextCards);
           setFlippedIndices([]);
+          flippedRef.current = [];
           setTurn(nextTurn);
           setScore(nextScore);
           syncState({ cards: nextCards, flippedIndices: [], turn: nextTurn, score: nextScore, status: nextStatus, winner: nextWinner });
@@ -309,8 +315,10 @@ export default function MemoryMatch({ roomId, mode, exitRoom, soundOn, toggleSou
          // Hint: Flip all cards temporarily
          const allIndices = cards.map((c, i) => i).filter(i => !cards[i].isMatched);
          setFlippedIndices(allIndices);
+         flippedRef.current = allIndices;
          setTimeout(() => {
            setFlippedIndices([]);
+           flippedRef.current = [];
          }, 2000);
       });
 
